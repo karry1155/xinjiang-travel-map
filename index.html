@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>新疆 8 日行程调度图</title>
+  <title>新疆 8 日路线动画</title>
   <style>
     :root {
-      --ink: #1f2933;
-      --muted: #64717f;
-      --line: #d7e0e8;
-      --panel: #ffffff;
-      --soft: #f3f6f8;
+      --ink: #18212c;
+      --muted: #687583;
+      --panel: rgba(255, 255, 255, 0.9);
+      --line: rgba(32, 49, 64, 0.14);
+      --land: #eef4ee;
+      --water: #cfe8f0;
+      --road: #bf5b23;
+      --flight: #2463eb;
+      --return: #6d35c6;
       --teal: #0f766e;
-      --teal-2: #115e59;
-      --blue: #2563eb;
-      --orange: #c05621;
-      --purple: #6d28d9;
-      --green: #15803d;
-      --shadow: 0 18px 44px rgba(24, 39, 54, 0.14);
+      --gold: #a76118;
+      --shadow: 0 22px 60px rgba(22, 34, 45, 0.18);
     }
 
     * {
@@ -29,874 +29,1076 @@
       width: 100%;
       min-height: 100%;
       margin: 0;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     body {
       color: var(--ink);
-      background: var(--soft);
+      background: #e7eef2;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
         "Microsoft YaHei", sans-serif;
       letter-spacing: 0;
     }
 
+    button {
+      font: inherit;
+    }
+
     .app {
-      width: 100%;
-      max-width: 100vw;
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
-      overflow: hidden;
-    }
-
-    .sidebar {
-      min-width: 0;
+      position: relative;
+      width: 100vw;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: var(--panel);
-      border-right: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      z-index: 2;
-    }
-
-    .header {
-      padding: 24px 24px 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: 28px;
-      line-height: 1.15;
-      font-weight: 780;
-    }
-
-    .summary {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      min-width: 0;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fbfcfd;
-    }
-
-    .stat b,
-    .stat span {
-      display: block;
-      min-width: 0;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)),
+        #e7eef2;
     }
 
-    .stat b {
-      font-size: 17px;
-      line-height: 1.2;
+    .map-layer {
+      position: absolute;
+      inset: 0;
+      padding: 78px 22px 126px 390px;
     }
 
-    .stat span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .days {
-      overflow: auto;
-      padding: 14px 14px 22px;
-    }
-
-    .day-card {
+    .map-scroll {
       width: 100%;
-      min-width: 0;
-      padding: 14px;
-      margin: 0 0 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      color: inherit;
-      text-align: left;
-      cursor: pointer;
-      transition: border-color 160ms ease, box-shadow 160ms ease,
-        transform 160ms ease;
-    }
-
-    .day-card:hover,
-    .day-card:focus-visible {
-      border-color: rgba(15, 118, 110, 0.55);
-      box-shadow: 0 10px 28px rgba(25, 55, 70, 0.12);
-      outline: none;
-      transform: translateY(-1px);
-    }
-
-    .day-card.active {
-      border-color: var(--teal);
-      box-shadow: inset 4px 0 0 var(--teal), 0 10px 28px rgba(25, 55, 70, 0.1);
-    }
-
-    .day-top {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .badge {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 48px;
-      height: 28px;
-      padding: 0 10px;
-      border-radius: 999px;
-      color: #fff;
-      background: var(--teal);
-      font-size: 13px;
-      font-weight: 760;
-    }
-
-    .theme {
-      min-width: 0;
-      color: #a74717;
-      font-size: 13px;
-      font-weight: 760;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .route {
-      margin: 11px 0 8px;
-      font-size: 17px;
-      line-height: 1.35;
-      font-weight: 760;
-    }
-
-    .desc,
-    .stay {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .stay {
-      margin-top: 6px;
-      color: var(--teal-2);
-      font-weight: 700;
-    }
-
-    .spots {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 10px;
-    }
-
-    .spot {
-      max-width: 100%;
-      padding: 5px 8px;
-      border-radius: 6px;
-      background: #eef6f5;
-      color: var(--teal-2);
-      font-size: 12px;
-      font-weight: 680;
-    }
-
-    .map-stage {
-      min-width: 0;
-      height: 100vh;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      background: #e8eef2;
-    }
-
-    .map-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      border-bottom: 1px solid #cfd9e2;
-      background: rgba(255, 255, 255, 0.92);
-    }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 14px;
-      align-items: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      gap: 7px;
-      align-items: center;
-      white-space: nowrap;
-    }
-
-    .legend-line {
-      width: 30px;
-      height: 0;
-      border-top: 4px solid var(--orange);
-      border-radius: 999px;
-    }
-
-    .legend-line.flight {
-      border-color: var(--blue);
-      border-top-style: dashed;
-    }
-
-    .legend-dot {
-      width: 14px;
-      height: 14px;
-      border: 3px solid #fff;
-      border-radius: 50%;
-      background: var(--teal);
-      box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.18);
-    }
-
-    .overview-button {
-      min-height: 36px;
-      padding: 0 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 720;
-      cursor: pointer;
-    }
-
-    .overview-button:hover,
-    .overview-button:focus-visible {
-      border-color: var(--teal);
-      outline: none;
-    }
-
-    .map-wrap {
-      min-height: 0;
-      padding: 18px;
+      height: 100%;
       overflow: auto;
+      border: 1px solid rgba(32, 49, 64, 0.12);
+      border-radius: 8px;
+      background: #f8fbfb;
+      box-shadow: 0 18px 44px rgba(22, 34, 45, 0.12);
     }
 
     .route-map {
       display: block;
       width: 100%;
-      min-width: 820px;
-      height: auto;
-      border: 1px solid #cfd9e2;
+      min-width: 920px;
+      height: 100%;
+      min-height: 570px;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      left: 390px;
+      z-index: 5;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 42px;
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.15;
+      font-weight: 800;
+    }
+
+    .caption {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .controls {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid rgba(32, 49, 64, 0.16);
       border-radius: 8px;
-      background: #f8fbfc;
-      box-shadow: 0 14px 34px rgba(24, 39, 54, 0.12);
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--ink);
+      box-shadow: 0 8px 20px rgba(22, 34, 45, 0.08);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 760;
+    }
+
+    .control-button.primary {
+      border-color: rgba(15, 118, 110, 0.48);
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .control-button:hover,
+    .control-button:focus-visible {
+      outline: none;
+      border-color: var(--teal);
+    }
+
+    .side-panel {
+      position: absolute;
+      top: 18px;
+      bottom: 18px;
+      left: 18px;
+      z-index: 6;
+      width: 344px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      border: 1px solid rgba(32, 49, 64, 0.14);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .trip-summary {
+      padding: 22px 22px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .trip-kicker {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .trip-summary h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.15;
+      font-weight: 820;
+    }
+
+    .trip-summary p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(248, 251, 251, 0.78);
+    }
+
+    .metric b,
+    .metric span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric b {
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .metric span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .current-day {
+      min-height: 0;
+      padding: 22px;
+      overflow: auto;
+    }
+
+    .day-index {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #e9f6f3;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .current-day h3 {
+      margin: 14px 0 8px;
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 820;
+    }
+
+    .route-text {
+      margin: 0;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.55;
+      font-weight: 720;
+    }
+
+    .day-desc {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .night {
+      margin-top: 16px;
+      padding: 12px 13px;
+      border: 1px solid rgba(167, 97, 24, 0.22);
+      border-radius: 8px;
+      background: #fff8ec;
+    }
+
+    .night span {
+      display: block;
+      color: #95530f;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .night b {
+      display: block;
+      margin-top: 4px;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      padding: 6px 9px;
+      border-radius: 7px;
+      background: #edf6f4;
+      color: #155e57;
+      font-size: 12px;
+      font-weight: 720;
+    }
+
+    .day-list {
+      display: grid;
+      gap: 7px;
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: rgba(248, 251, 251, 0.7);
+    }
+
+    .mini-day {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      width: 100%;
+      min-height: 38px;
+      padding: 7px 9px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .mini-day:hover,
+    .mini-day:focus-visible,
+    .mini-day.active {
+      border-color: rgba(15, 118, 110, 0.28);
+      background: #fff;
+      outline: none;
+    }
+
+    .mini-day.active {
+      box-shadow: inset 3px 0 0 var(--teal);
+    }
+
+    .mini-day strong {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #edf2f4;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mini-day.active strong {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .mini-day span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .mini-day em {
+      color: var(--muted);
+      font-size: 12px;
+      font-style: normal;
+      white-space: nowrap;
+    }
+
+    .bottom-rail {
+      position: absolute;
+      right: 22px;
+      bottom: 18px;
+      left: 390px;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: repeat(8, minmax(84px, 1fr));
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid rgba(32, 49, 64, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 18px 44px rgba(22, 34, 45, 0.12);
+      backdrop-filter: blur(16px);
+      overflow-x: auto;
+    }
+
+    .rail-item {
+      min-width: 84px;
+      min-height: 58px;
+      padding: 9px;
+      border: 1px solid rgba(32, 49, 64, 0.1);
+      border-radius: 8px;
+      background: rgba(248, 251, 251, 0.72);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .rail-item.active {
+      border-color: rgba(15, 118, 110, 0.42);
+      background: #edf8f5;
+    }
+
+    .rail-item b {
+      display: block;
+      color: var(--teal);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .rail-item span {
+      display: block;
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 720;
+      line-height: 1.25;
     }
 
     .land {
-      fill: #edf3ef;
-      stroke: #b8c7bd;
+      fill: var(--land);
+      stroke: #b9c9bd;
       stroke-width: 2;
     }
 
-    .province {
+    .region {
       fill: none;
-      stroke: #d0dad3;
+      stroke: #d1dbd4;
       stroke-width: 1.4;
       stroke-dasharray: 5 8;
     }
 
     .water {
-      fill: #cfe7ef;
+      fill: var(--water);
       stroke: #9fc4d2;
       stroke-width: 1.2;
     }
 
-    .mountain {
+    .terrain {
       fill: none;
-      stroke: #d5c3aa;
-      stroke-width: 2;
+      stroke: #d4c2a8;
       stroke-linecap: round;
-      opacity: 0.7;
+      stroke-width: 2;
+      opacity: 0.72;
     }
 
-    .route-path {
+    .all-route {
       fill: none;
-      stroke-width: 7;
+      stroke-width: 4;
       stroke-linecap: round;
       stroke-linejoin: round;
-      opacity: 0.28;
-      transition: opacity 160ms ease, stroke-width 160ms ease, filter 160ms ease;
+      opacity: 0.18;
     }
 
-    .route-path.flight {
-      stroke: var(--blue);
-      stroke-dasharray: 12 14;
+    .all-route.flight,
+    .segment.flight {
+      stroke: var(--flight);
+      stroke-dasharray: 11 13;
     }
 
-    .route-path.car {
-      stroke: var(--orange);
+    .all-route.car,
+    .segment.car {
+      stroke: var(--road);
     }
 
-    .route-path.return {
-      stroke: var(--purple);
-      stroke-dasharray: 12 14;
+    .all-route.return,
+    .segment.return {
+      stroke: var(--return);
+      stroke-dasharray: 11 13;
     }
 
-    .route-path.active {
+    .segment {
+      fill: none;
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      filter: drop-shadow(0 10px 9px rgba(22, 34, 45, 0.18));
+      transition: opacity 240ms ease;
+    }
+
+    .segment.visible {
       opacity: 1;
-      stroke-width: 10;
-      filter: drop-shadow(0 8px 8px rgba(31, 41, 51, 0.18));
-    }
-
-    .route-path.overview {
-      opacity: 0.78;
-    }
-
-    .route-path.dim {
-      opacity: 0.14;
+      animation: drawRoute 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     .node {
-      cursor: pointer;
+      opacity: 0.42;
+      transition: opacity 220ms ease, transform 220ms ease;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .node.visible {
+      opacity: 1;
+      transform: scale(1.03);
     }
 
     .node circle {
       fill: #fff;
+      stroke: #96a8b3;
+      stroke-width: 3;
+    }
+
+    .node.visible circle {
       stroke: var(--teal);
-      stroke-width: 4;
-      transition: stroke-width 160ms ease, fill 160ms ease, opacity 160ms ease;
-    }
-
-    .node.flight-node circle {
-      stroke: var(--blue);
-    }
-
-    .node.night circle {
-      fill: #fff8e8;
-      stroke: #a74717;
-    }
-
-    .node.active circle {
-      fill: var(--teal);
-      stroke-width: 6;
-    }
-
-    .node.active text,
-    .node.active .pin-icon {
-      fill: #fff;
-    }
-
-    .node.dim {
-      opacity: 0.38;
-    }
-
-    .pin-icon {
-      fill: var(--teal-2);
-      font-size: 15px;
-      font-weight: 900;
-      pointer-events: none;
-      text-anchor: middle;
-      dominant-baseline: central;
-    }
-
-    .label {
-      fill: #253241;
-      font-size: 20px;
-      font-weight: 760;
-      paint-order: stroke;
-      stroke: rgba(248, 251, 252, 0.9);
       stroke-width: 5;
-      stroke-linejoin: round;
     }
 
-    .small-label {
+    .node.flight-node.visible circle {
+      stroke: var(--flight);
+    }
+
+    .node-label {
+      fill: #1d2935;
+      font-size: 19px;
+      font-weight: 790;
+      paint-order: stroke;
+      stroke: rgba(248, 251, 251, 0.94);
+      stroke-linejoin: round;
+      stroke-width: 5;
+    }
+
+    .node-sub {
       fill: var(--muted);
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 680;
       paint-order: stroke;
-      stroke: rgba(248, 251, 252, 0.9);
-      stroke-width: 4;
+      stroke: rgba(248, 251, 251, 0.94);
       stroke-linejoin: round;
+      stroke-width: 4;
     }
 
-    .day-tag {
-      fill: #fff;
-      font-size: 15px;
-      font-weight: 820;
+    .node-mark {
+      fill: #47616f;
+      font-size: 13px;
+      font-weight: 900;
       text-anchor: middle;
       dominant-baseline: central;
-      pointer-events: none;
     }
 
-    .stay-card {
-      fill: #ffffff;
-      stroke: #d7e0e8;
+    .night-callout {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 240ms ease, transform 240ms ease;
+    }
+
+    .night-callout.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .callout-box {
+      fill: #fff;
+      stroke: rgba(32, 49, 64, 0.14);
       stroke-width: 1.5;
-      filter: drop-shadow(0 8px 14px rgba(24, 39, 54, 0.11));
+      filter: drop-shadow(0 12px 18px rgba(22, 34, 45, 0.13));
     }
 
-    .stay-title {
-      fill: #a74717;
-      font-size: 15px;
+    .callout-title {
+      fill: #995312;
+      font-size: 14px;
       font-weight: 820;
     }
 
-    .stay-place {
-      fill: #253241;
-      font-size: 17px;
-      font-weight: 760;
+    .callout-place {
+      fill: #1d2935;
+      font-size: 16px;
+      font-weight: 790;
     }
 
-    .info-panel {
-      position: absolute;
-      right: 34px;
-      bottom: 34px;
-      width: min(360px, calc(100vw - 48px));
-      padding: 14px 16px;
-      border: 1px solid rgba(207, 217, 226, 0.92);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 14px 34px rgba(24, 39, 54, 0.14);
+    .day-pill {
+      fill: var(--teal);
     }
 
-    .map-shell {
-      position: relative;
-      min-width: 0;
-      min-height: 0;
-    }
-
-    .info-panel h2 {
-      margin: 0 0 7px;
-      font-size: 17px;
-      line-height: 1.3;
-    }
-
-    .info-panel p {
-      margin: 0;
-      color: var(--muted);
+    .day-pill-text {
+      fill: #fff;
       font-size: 13px;
-      line-height: 1.55;
+      font-weight: 850;
+      text-anchor: middle;
+      dominant-baseline: central;
     }
 
-    @media (max-width: 900px) {
+    @keyframes drawRoute {
+      from {
+        stroke-dashoffset: var(--route-length);
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @media (max-width: 980px) {
+      html,
+      body {
+        overflow: auto;
+      }
+
       .app {
-        width: 100vw;
-        grid-template-columns: 1fr;
-        grid-template-rows: 55vh 45vh;
+        min-height: 100vh;
+        height: auto;
+        display: grid;
+        grid-template-rows: auto 54vh auto;
+        overflow: visible;
       }
 
-      .map-stage {
+      .side-panel,
+      .topbar,
+      .map-layer,
+      .bottom-rail {
+        position: relative;
+        inset: auto;
+        left: auto;
+        right: auto;
+        top: auto;
+        bottom: auto;
+      }
+
+      .topbar {
         grid-row: 1;
-        height: 55vh;
+        padding: 14px 12px 8px;
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .sidebar {
-        grid-row: 2;
-        height: 45vh;
-        border-top: 1px solid var(--line);
-        border-right: 0;
-      }
-
-      .header {
-        padding: 16px 16px 12px;
-      }
-
-      h1 {
-        font-size: 22px;
-      }
-
-      .stats {
-        margin-top: 12px;
-      }
-
-      .days {
-        padding: 10px;
-      }
-
-      .map-toolbar {
-        padding: 10px 12px;
-      }
-
-      .map-wrap {
+      .controls {
         width: 100%;
-        max-width: 100vw;
-        min-width: 0;
-        padding: 10px;
+      }
+
+      .control-button {
+        flex: 1 1 0;
+        justify-content: center;
+      }
+
+      .map-layer {
+        grid-row: 2;
+        padding: 0 10px 10px;
+        min-height: 0;
+      }
+
+      .map-scroll {
+        height: 100%;
       }
 
       .route-map {
-        min-width: 760px;
+        min-width: 840px;
       }
 
-      .info-panel {
+      .side-panel {
+        grid-row: 3;
+        width: auto;
+        margin: 0 10px 10px;
+        max-height: none;
+      }
+
+      .trip-summary {
+        padding: 16px;
+      }
+
+      .trip-summary h2 {
+        font-size: 22px;
+      }
+
+      .current-day {
+        padding: 16px;
+      }
+
+      .current-day h3 {
+        font-size: 21px;
+      }
+
+      .day-list {
         display: none;
+      }
+
+      .bottom-rail {
+        grid-row: 4;
+        left: auto;
+        right: auto;
+        margin: 0 10px 12px;
+        grid-template-columns: repeat(8, 104px);
       }
     }
   </style>
 </head>
 <body>
   <main class="app">
-    <aside class="sidebar" aria-label="行程列表">
-      <section class="header">
-        <h1>新疆 8 日行程调度图</h1>
-        <p class="summary">一张总图看全程：蓝色虚线是航班，橙色实线是车程，带“夜”标记的是当天晚上大致停留地。</p>
-        <div class="stats" aria-label="行程概览">
-          <div class="stat"><b>8 天</b><span>完整行程</span></div>
-          <div class="stat"><b>2 程</b><span>往返航班</span></div>
-          <div class="stat"><b>7 晚</b><span>夜宿调度</span></div>
-        </div>
-      </section>
-      <section class="days" id="days"></section>
-    </aside>
-
-    <section class="map-stage" aria-label="行程路线总图">
-      <div class="map-toolbar">
-        <div class="legend" aria-label="图例">
-          <span class="legend-item"><span class="legend-line flight"></span>飞机线</span>
-          <span class="legend-item"><span class="legend-line"></span>汽车线</span>
-          <span class="legend-item"><span class="legend-dot"></span>夜宿点</span>
-        </div>
-        <button class="overview-button" id="overviewButton" type="button">查看全程总览</button>
+    <section class="topbar" aria-label="路线控制">
+      <div class="title-block">
+        <h1>新疆 8 日路线动画</h1>
+        <p class="caption">按天播放线路，先看动线，再看当天细节。</p>
       </div>
-      <div class="map-shell">
-        <div class="map-wrap">
-          <svg class="route-map" id="routeMap" viewBox="0 0 1200 760" role="img" aria-label="新疆 8 日旅行路线调度图">
-            <defs>
-              <marker id="arrowCar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#c05621"></path>
-              </marker>
-              <marker id="arrowFlight" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"></path>
-              </marker>
-              <marker id="arrowReturn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#6d28d9"></path>
-              </marker>
-            </defs>
-
-            <rect x="0" y="0" width="1200" height="760" fill="#f8fbfc"></rect>
-            <path class="land" d="M92,166 L182,95 L329,70 L474,96 L574,82 L705,126 L842,105 L965,170 L1009,266 L970,363 L1018,479 L930,591 L764,632 L646,682 L507,644 L365,674 L241,623 L132,537 L91,395 L48,281 Z"></path>
-            <path class="province" d="M210,130 C315,204 455,196 555,160 C672,118 822,162 934,236"></path>
-            <path class="province" d="M132,514 C260,456 374,451 470,492 C584,539 702,516 818,442 C879,402 938,387 990,399"></path>
-            <path class="mountain" d="M220,570 C340,526 430,544 520,582 C640,632 728,575 850,536"></path>
-            <path class="mountain" d="M468,236 C560,194 660,198 754,231 C836,260 907,255 971,223"></path>
-            <ellipse class="water" cx="223" cy="336" rx="68" ry="32"></ellipse>
-            <ellipse class="water" cx="833" cy="244" rx="30" ry="17"></ellipse>
-            <text class="label" x="80" y="70">新疆路线主图</text>
-            <text class="small-label" x="82" y="100">所有交通动线保持在同一张图里，点击左侧天数只做高亮</text>
-            <text class="small-label" x="980" y="690">无锡航班端点</text>
-            <text class="small-label" x="980" y="714">进出疆航班从这里连接石河子</text>
-
-            <g id="paths"></g>
-            <g id="nodes"></g>
-            <g id="stays"></g>
-          </svg>
-        </div>
-
-        <aside class="info-panel" id="infoPanel" aria-live="polite">
-          <h2>全程总览</h2>
-          <p>蓝色虚线从无锡飞到石河子；中间以汽车线串起赛里木湖、伊犁草原、奎屯、乌鲁木齐、天山天池、南山牧场；最后紫色虚线从石河子返程。</p>
-        </aside>
+      <div class="controls">
+        <button class="control-button primary" id="playButton" type="button">播放路线</button>
+        <button class="control-button" id="overviewButton" type="button">总览</button>
       </div>
     </section>
+
+    <aside class="side-panel" aria-label="当前行程">
+      <section class="trip-summary">
+        <p class="trip-kicker">TRIP ROUTE</p>
+        <h2>北疆环线调度</h2>
+        <p>从无锡飞石河子，车行伊犁、奎屯、乌鲁木齐周边，再由石河子返程。</p>
+        <div class="metrics">
+          <div class="metric"><b>8 天</b><span>行程</span></div>
+          <div class="metric"><b>2 段</b><span>航班</span></div>
+          <div class="metric"><b>7 晚</b><span>停留</span></div>
+        </div>
+      </section>
+      <section class="current-day" id="currentDay" aria-live="polite"></section>
+      <section class="day-list" id="dayList" aria-label="天数列表"></section>
+    </aside>
+
+    <section class="map-layer" aria-label="路线地图">
+      <div class="map-scroll">
+        <svg class="route-map" id="routeMap" viewBox="0 0 1200 720" role="img" aria-label="新疆旅行路线动画图">
+          <defs>
+            <marker id="arrowRoad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#bf5b23"></path>
+            </marker>
+            <marker id="arrowFlight" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2463eb"></path>
+            </marker>
+            <marker id="arrowReturn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6d35c6"></path>
+            </marker>
+          </defs>
+
+          <rect width="1200" height="720" fill="#f8fbfb"></rect>
+          <path class="land" d="M92,154 L181,82 L330,60 L471,84 L575,70 L706,116 L842,96 L964,158 L1010,252 L971,350 L1018,458 L930,570 L766,612 L650,660 L508,626 L366,656 L240,604 L132,520 L90,382 L48,267 Z"></path>
+          <path class="region" d="M204,116 C318,190 452,184 560,148 C674,110 824,151 936,222"></path>
+          <path class="region" d="M130,494 C255,438 380,434 472,472 C582,516 700,496 820,426 C884,388 938,374 990,386"></path>
+          <path class="terrain" d="M220,548 C340,506 432,520 522,560 C642,608 732,556 856,516"></path>
+          <path class="terrain" d="M464,220 C558,180 660,186 752,218 C835,246 908,240 972,210"></path>
+          <ellipse class="water" cx="225" cy="318" rx="68" ry="32"></ellipse>
+          <ellipse class="water" cx="838" cy="232" rx="32" ry="18"></ellipse>
+          <text class="node-sub" x="84" y="82">路线会逐日绘制，不一次性压满信息</text>
+          <text class="node-label" x="84" y="56">新疆路线总图</text>
+          <g id="baseRoutes"></g>
+          <g id="segments"></g>
+          <g id="nodes"></g>
+          <g id="callouts"></g>
+        </svg>
+      </div>
+    </section>
+
+    <nav class="bottom-rail" id="bottomRail" aria-label="行程进度"></nav>
   </main>
 
   <script>
     const places = {
-      wuxi: { name: "无锡", x: 1045, y: 642, kind: "flight" },
-      shihezi: { name: "石河子", x: 632, y: 228, kind: "flight" },
-      sailimu: { name: "赛里木湖", x: 222, y: 336 },
-      guozigou: { name: "果子沟大桥", x: 273, y: 360 },
-      yining: { name: "伊宁/可克达拉", x: 338, y: 402 },
-      nalati: { name: "那拉提草原", x: 468, y: 526 },
-      xinyuan: { name: "新源/巩留", x: 426, y: 496 },
-      flower: { name: "天山花海", x: 358, y: 418 },
-      kazanqi: { name: "喀赞其", x: 332, y: 432 },
-      kuitun: { name: "奎屯/双河/博乐方向", x: 566, y: 284 },
-      dushanzi: { name: "独山子大峡谷", x: 604, y: 318 },
-      urumqi: { name: "乌鲁木齐/昌吉", x: 778, y: 286 },
-      tianchi: { name: "天山天池", x: 836, y: 244 },
-      nanshan: { name: "南山牧场", x: 748, y: 368 }
+      wuxi: { name: "无锡", note: "航班端点", x: 1042, y: 614, kind: "flight" },
+      shihezi: { name: "石河子", note: "进出疆机场", x: 632, y: 214, kind: "flight" },
+      sailimu: { name: "赛里木湖", note: "湖景", x: 224, y: 318 },
+      guozigou: { name: "果子沟大桥", note: "桥景", x: 282, y: 344 },
+      yining: { name: "伊宁/可克达拉", note: "夜宿方向", x: 342, y: 384 },
+      nalati: { name: "那拉提草原", note: "空中草原", x: 472, y: 502 },
+      xinyuan: { name: "新源/巩留", note: "夜宿方向", x: 430, y: 474 },
+      flower: { name: "天山花海", note: "拍照", x: 362, y: 402 },
+      kazanqi: { name: "喀赞其", note: "民俗街区", x: 334, y: 418 },
+      kuitun: { name: "奎屯/双河/博乐", note: "北疆节点", x: 566, y: 270 },
+      dushanzi: { name: "独山子大峡谷", note: "峡谷地貌", x: 604, y: 304 },
+      urumqi: { name: "乌鲁木齐/昌吉", note: "城市停留", x: 778, y: 272 },
+      tianchi: { name: "天山天池", note: "景区", x: 838, y: 232 },
+      nanshan: { name: "南山牧场", note: "牧场风景", x: 748, y: 352 }
     };
 
     const itinerary = [
       {
         day: 1,
         theme: "抵达入住",
-        route: "昆山/无锡 → 石河子",
-        desc: "航班：无锡 08:00—13:20 石河子，抵达后入住。",
-        stay: "夜宿：石河子",
-        spots: ["无锡", "石河子", "入住"],
+        route: "无锡 → 石河子",
+        desc: "08:00 从无锡起飞，13:20 抵达石河子。当天只处理抵达和入住。",
+        stay: "石河子",
+        tags: ["航班", "抵达", "入住"],
         mode: "flight",
         path: ["wuxi", "shihezi"],
-        card: { x: 688, y: 172 }
+        callout: { x: 654, y: 154 }
       },
       {
         day: 2,
         theme: "湖景与公路桥",
-        route: "石河子 → 赛里木湖 → 果子沟大桥 → 伊宁/可克达拉",
-        desc: "这天看高山湖泊和果子沟公路桥景，晚上向伊犁河谷停留。",
-        stay: "夜宿：伊宁/可克达拉方向",
-        spots: ["赛里木湖", "果子沟大桥", "伊宁/可克达拉"],
+        route: "石河子 → 赛里木湖 → 果子沟 → 伊宁/可克达拉",
+        desc: "这天核心是湖景和果子沟大桥，晚上停到伊犁方向。",
+        stay: "伊宁/可克达拉方向",
+        tags: ["赛里木湖", "果子沟", "伊犁"],
         mode: "car",
         path: ["shihezi", "sailimu", "guozigou", "yining"],
-        card: { x: 188, y: 384 }
+        callout: { x: 118, y: 376 }
       },
       {
         day: 3,
         theme: "草原风景",
-        route: "伊宁/可克达拉 → 那拉提大草原 → 新源/巩留",
-        desc: "核心是那拉提大草原和空中草原，晚上停到新源/巩留方向。",
-        stay: "夜宿：新源/巩留方向",
-        spots: ["那拉提大草原", "空中草原", "新源/巩留"],
+        route: "伊宁方向 → 那拉提 → 新源/巩留",
+        desc: "重点看那拉提大草原和空中草原，晚上落在新源/巩留方向。",
+        stay: "新源/巩留方向",
+        tags: ["那拉提", "空中草原", "草原"],
         mode: "car",
         path: ["yining", "nalati", "xinyuan"],
-        card: { x: 462, y: 548 }
+        callout: { x: 470, y: 532 }
       },
       {
         day: 4,
-        theme: "花海与民俗街区",
-        route: "新源/巩留 → 天山花海 → 喀赞其 → 奎屯/双河/博乐方向",
-        desc: "上午花海拍照，随后民俗街区游览，再向北疆交通节点移动。",
-        stay: "夜宿：奎屯/双河/博乐方向",
-        spots: ["天山花海", "喀赞其民俗村", "奎屯方向"],
+        theme: "花海与民俗",
+        route: "新源/巩留 → 天山花海 → 喀赞其 → 奎屯方向",
+        desc: "花海拍照后去喀赞其民俗村，再往奎屯/双河/博乐方向移动。",
+        stay: "奎屯/双河/博乐方向",
+        tags: ["天山花海", "喀赞其", "转场"],
         mode: "car",
         path: ["xinyuan", "flower", "kazanqi", "kuitun"],
-        card: { x: 602, y: 332 }
+        callout: { x: 520, y: 318 }
       },
       {
         day: 5,
         theme: "峡谷地貌",
         route: "奎屯方向 → 独山子大峡谷 → 乌鲁木齐/昌吉",
-        desc: "以独山子大峡谷地貌景观为主，晚上进入乌鲁木齐/昌吉方向。",
-        stay: "夜宿：乌鲁木齐/昌吉方向",
-        spots: ["独山子大峡谷", "乌鲁木齐/昌吉"],
+        desc: "看独山子大峡谷，然后进入乌鲁木齐/昌吉方向。",
+        stay: "乌鲁木齐/昌吉方向",
+        tags: ["独山子", "峡谷", "乌昌"],
         mode: "car",
         path: ["kuitun", "dushanzi", "urumqi"],
-        card: { x: 770, y: 324 }
+        callout: { x: 754, y: 314 }
       },
       {
         day: 6,
-        theme: "展馆、天池与晚宴",
-        route: "乌鲁木齐/昌吉 → 和田玉展览馆 → 天山天池 → 红酒晚宴",
-        desc: "有展馆/购物属性安排，也有天山天池景区和晚宴。",
-        stay: "夜宿：乌鲁木齐/昌吉方向",
-        spots: ["和田玉展览馆", "天山天池", "红酒晚宴"],
+        theme: "展馆与天池",
+        route: "乌鲁木齐/昌吉 → 和田玉展览馆 → 天山天池 → 晚宴",
+        desc: "有展馆/购物属性安排，也有天山天池景区和红酒晚宴。",
+        stay: "乌鲁木齐/昌吉方向",
+        tags: ["和田玉", "天山天池", "晚宴"],
         mode: "car",
         path: ["urumqi", "tianchi", "urumqi"],
-        card: { x: 868, y: 188 }
+        callout: { x: 846, y: 174 }
       },
       {
         day: 7,
-        theme: "展馆体验与牧场",
+        theme: "体验与牧场",
         route: "乌鲁木齐/昌吉 → 新疆宝藏馆 → 边疆之花 → 南山牧场",
         desc: "展馆/体验类安排后去南山牧场，看牧场风景。",
-        stay: "夜宿：乌鲁木齐/昌吉方向",
-        spots: ["新疆宝藏馆", "边疆之花", "南山牧场"],
+        stay: "乌鲁木齐/昌吉方向",
+        tags: ["宝藏馆", "边疆之花", "南山牧场"],
         mode: "car",
         path: ["urumqi", "nanshan", "urumqi"],
-        card: { x: 785, y: 404 }
+        callout: { x: 842, y: 398 }
       },
       {
         day: 8,
         theme: "返程",
         route: "乌鲁木齐/昌吉 → 石河子 → 无锡",
-        desc: "回到石河子机场返程，航班：石河子 14:05—18:40 无锡。",
-        stay: "返程：回家",
-        spots: ["石河子", "无锡", "返程"],
+        desc: "回到石河子机场，14:05 起飞，18:40 抵达无锡。",
+        stay: "回家",
+        tags: ["石河子", "返程", "无锡"],
         mode: "return",
         path: ["urumqi", "shihezi", "wuxi"],
-        card: { x: 942, y: 576 }
+        callout: { x: 936, y: 544 }
       }
     ];
 
     const labelOffsets = {
-      wuxi: [18, -18],
-      shihezi: [18, -18],
-      sailimu: [-82, -26],
-      guozigou: [16, 2],
-      yining: [-24, 34],
-      nalati: [18, 10],
-      xinyuan: [-94, 2],
-      flower: [-96, -8],
-      kazanqi: [-70, 28],
-      kuitun: [18, -20],
-      dushanzi: [14, 28],
+      wuxi: [18, -12],
+      shihezi: [18, -20],
+      sailimu: [-88, -20],
+      guozigou: [18, 5],
+      yining: [-18, 34],
+      nalati: [18, 8],
+      xinyuan: [-96, -2],
+      flower: [-94, -8],
+      kazanqi: [-72, 26],
+      kuitun: [18, -18],
+      dushanzi: [16, 30],
       urumqi: [18, 3],
       tianchi: [18, -10],
       nanshan: [18, 24]
     };
 
-    const infoPanel = document.getElementById("infoPanel");
-    const pathsGroup = document.getElementById("paths");
-    const nodesGroup = document.getElementById("nodes");
-    const staysGroup = document.getElementById("stays");
-    const dayButtons = [];
+    const baseRoutes = document.getElementById("baseRoutes");
+    const segments = document.getElementById("segments");
+    const nodes = document.getElementById("nodes");
+    const callouts = document.getElementById("callouts");
+    const currentDay = document.getElementById("currentDay");
+    const dayList = document.getElementById("dayList");
+    const bottomRail = document.getElementById("bottomRail");
+    let activeIndex = 0;
+    let playTimer = null;
 
-    function pathData(keys, mode) {
-      const points = keys.map((key) => places[key]);
-      if (mode === "flight") {
-        const [start, end] = points;
-        return `M ${start.x} ${start.y} C 970 365, 830 180, ${end.x} ${end.y}`;
-      }
-      if (mode === "return") {
-        const [start, mid, end] = points;
-        return `M ${start.x} ${start.y} L ${mid.x} ${mid.y} C 820 190, 972 376, ${end.x} ${end.y}`;
-      }
-      return points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+    function svgEl(tag, attrs = {}) {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+      return el;
     }
 
-    function markerFor(mode) {
+    function pathD(item) {
+      const points = item.path.map((key) => places[key]);
+      if (item.mode === "flight") {
+        const [from, to] = points;
+        return `M ${from.x} ${from.y} C 970 350, 820 168, ${to.x} ${to.y}`;
+      }
+      if (item.mode === "return") {
+        const [from, mid, to] = points;
+        return `M ${from.x} ${from.y} L ${mid.x} ${mid.y} C 830 188, 970 364, ${to.x} ${to.y}`;
+      }
+      return points.map((point, i) => `${i ? "L" : "M"} ${point.x} ${point.y}`).join(" ");
+    }
+
+    function marker(mode) {
       if (mode === "flight") return "url(#arrowFlight)";
       if (mode === "return") return "url(#arrowReturn)";
-      return "url(#arrowCar)";
+      return "url(#arrowRoad)";
     }
 
-    function renderCards() {
-      const days = document.getElementById("days");
-      itinerary.forEach((item, index) => {
-        const button = document.createElement("button");
-        button.className = "day-card";
-        button.type = "button";
-        button.innerHTML = `
-          <div class="day-top">
-            <span class="badge">第${item.day}天</span>
-            <span class="theme">${item.theme}</span>
-          </div>
-          <div class="route">${item.route}</div>
-          <p class="desc">${item.desc}</p>
-          <p class="stay">${item.stay}</p>
-          <div class="spots">${item.spots.map((spot) => `<span class="spot">${spot}</span>`).join("")}</div>
-        `;
-        button.addEventListener("click", () => focusDay(index));
-        days.appendChild(button);
-        dayButtons.push(button);
-      });
-    }
-
-    function renderPaths() {
+    function renderMap() {
       itinerary.forEach((item) => {
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", pathData(item.path, item.mode));
-        path.setAttribute("class", `route-path ${item.mode}`);
-        path.setAttribute("data-day", item.day);
-        path.setAttribute("marker-end", markerFor(item.mode));
-        path.addEventListener("click", () => focusDay(item.day - 1));
-        pathsGroup.appendChild(path);
-      });
-    }
+        const base = svgEl("path", {
+          d: pathD(item),
+          class: `all-route ${item.mode}`
+        });
+        baseRoutes.appendChild(base);
 
-    function renderNodes() {
+        const segment = svgEl("path", {
+          d: pathD(item),
+          class: `segment ${item.mode}`,
+          "data-day": item.day,
+          "marker-end": marker(item.mode)
+        });
+        segments.appendChild(segment);
+      });
+
       Object.entries(places).forEach(([key, place]) => {
-        const usedBy = itinerary
-          .filter((item) => item.path.includes(key))
-          .map((item) => item.day);
-        const [dx, dy] = labelOffsets[key] || [16, -12];
-        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        group.setAttribute("class", `node ${place.kind === "flight" ? "flight-node" : ""}`);
-        group.setAttribute("data-place", key);
-        group.setAttribute("data-days", usedBy.join(","));
-        group.setAttribute("transform", `translate(${place.x} ${place.y})`);
+        const [dx, dy] = labelOffsets[key] || [18, -8];
+        const used = itinerary.filter((item) => item.path.includes(key)).map((item) => item.day);
+        const group = svgEl("g", {
+          class: `node ${place.kind === "flight" ? "flight-node" : ""}`,
+          "data-place": key,
+          "data-days": used.join(","),
+          transform: `translate(${place.x} ${place.y})`
+        });
         group.innerHTML = `
           <circle r="16"></circle>
-          <text class="pin-icon" y="1">${place.kind === "flight" ? "机" : "点"}</text>
-          <text class="label" x="${dx}" y="${dy}">${place.name}</text>
+          <text class="node-mark" y="1">${place.kind === "flight" ? "机" : "点"}</text>
+          <text class="node-label" x="${dx}" y="${dy}">${place.name}</text>
+          <text class="node-sub" x="${dx}" y="${dy + 20}">${place.note}</text>
         `;
-        if (usedBy.length) {
-          group.addEventListener("click", () => focusDay(usedBy[0] - 1));
-        }
-        nodesGroup.appendChild(group);
+        if (used.length) group.addEventListener("click", () => selectDay(used[0] - 1));
+        nodes.appendChild(group);
       });
-    }
 
-    function renderStayCards() {
       itinerary.forEach((item) => {
-        const card = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        card.setAttribute("data-day", item.day);
-        card.setAttribute("class", "stay-card-group");
-        const cardTitle = item.day === 8 ? "第8天 · 返程" : `第${item.day}天 · 夜宿`;
-        card.innerHTML = `
-          <rect class="stay-card" x="${item.card.x}" y="${item.card.y}" width="184" height="64" rx="8"></rect>
-          <text class="stay-title" x="${item.card.x + 14}" y="${item.card.y + 24}">${cardTitle}</text>
-          <text class="stay-place" x="${item.card.x + 14}" y="${item.card.y + 49}">${item.stay.replace("夜宿：", "").replace("返程：", "")}</text>
+        const group = svgEl("g", {
+          class: "night-callout",
+          "data-day": item.day,
+          transform: `translate(${item.callout.x} ${item.callout.y})`
+        });
+        const title = item.day === 8 ? "第8天 · 返程" : `第${item.day}天 · 夜宿`;
+        group.innerHTML = `
+          <rect class="callout-box" width="188" height="66" rx="8"></rect>
+          <rect class="day-pill" x="14" y="-13" width="42" height="26" rx="13"></rect>
+          <text class="day-pill-text" x="35" y="0">D${item.day}</text>
+          <text class="callout-title" x="14" y="28">${title}</text>
+          <text class="callout-place" x="14" y="52">${item.stay}</text>
         `;
-        card.addEventListener("click", () => focusDay(item.day - 1));
-        staysGroup.appendChild(card);
+        callouts.appendChild(group);
+      });
+
+      document.querySelectorAll(".segment").forEach((path) => {
+        const length = path.getTotalLength();
+        path.style.setProperty("--route-length", length);
+        path.style.strokeDasharray = length;
+        path.style.strokeDashoffset = length;
       });
     }
 
-    function focusDay(index) {
+    function renderControls() {
+      itinerary.forEach((item, index) => {
+        const listButton = document.createElement("button");
+        listButton.className = "mini-day";
+        listButton.type = "button";
+        listButton.innerHTML = `<strong>D${item.day}</strong><span>${item.theme}</span><em>${item.mode === "flight" ? "飞" : item.mode === "return" ? "返" : "车"}</em>`;
+        listButton.addEventListener("click", () => selectDay(index));
+        dayList.appendChild(listButton);
+
+        const railButton = document.createElement("button");
+        railButton.className = "rail-item";
+        railButton.type = "button";
+        railButton.innerHTML = `<b>DAY ${item.day}</b><span>${item.theme}</span>`;
+        railButton.addEventListener("click", () => selectDay(index));
+        bottomRail.appendChild(railButton);
+      });
+    }
+
+    function updateDetail(item) {
+      currentDay.innerHTML = `
+        <span class="day-index">第${item.day}天</span>
+        <h3>${item.theme}</h3>
+        <p class="route-text">${item.route}</p>
+        <p class="day-desc">${item.desc}</p>
+        <div class="night">
+          <span>${item.day === 8 ? "返程" : "当天晚上"}</span>
+          <b>${item.stay}</b>
+        </div>
+        <div class="chips">${item.tags.map((tag) => `<span class="chip">${tag}</span>`).join("")}</div>
+      `;
+    }
+
+    function selectDay(index) {
+      activeIndex = index;
       const item = itinerary[index];
       const activePlaces = new Set(item.path);
 
-      dayButtons.forEach((button, buttonIndex) => {
-        button.classList.toggle("active", buttonIndex === index);
+      updateDetail(item);
+
+      document.querySelectorAll(".mini-day").forEach((button, i) => {
+        button.classList.toggle("active", i === index);
+      });
+      document.querySelectorAll(".rail-item").forEach((button, i) => {
+        button.classList.toggle("active", i === index);
       });
 
-      document.querySelectorAll(".route-path").forEach((path) => {
-        const isActive = Number(path.dataset.day) === item.day;
-        path.classList.toggle("active", isActive);
-        path.classList.toggle("dim", !isActive);
-        path.classList.remove("overview");
+      document.querySelectorAll(".segment").forEach((path) => {
+        const active = Number(path.dataset.day) === item.day;
+        path.classList.toggle("visible", active);
+        if (active) {
+          path.style.animation = "none";
+          path.getBoundingClientRect();
+          path.style.animation = "";
+        }
       });
 
       document.querySelectorAll(".node").forEach((node) => {
-        const isActive = activePlaces.has(node.dataset.place);
-        node.classList.toggle("active", isActive);
-        node.classList.toggle("dim", !isActive);
+        node.classList.toggle("visible", activePlaces.has(node.dataset.place));
       });
 
-      document.querySelectorAll(".stay-card-group").forEach((card) => {
-        const isActive = Number(card.dataset.day) === item.day;
-        card.style.opacity = isActive ? "1" : "0.36";
+      document.querySelectorAll(".night-callout").forEach((callout) => {
+        callout.classList.toggle("visible", Number(callout.dataset.day) === item.day);
       });
 
-      infoPanel.innerHTML = `
-        <h2>第${item.day}天 · ${item.theme}</h2>
-        <p>${item.route}</p>
-        <p>${item.desc}</p>
-        <p>${item.stay}</p>
-      `;
+      panToRoute(item);
+    }
+
+    function panToRoute(item) {
+      const scroller = document.querySelector(".map-scroll");
+      const svg = document.getElementById("routeMap");
+      if (!scroller || !svg) return;
+      const points = item.path.map((key) => places[key]);
+      const minX = Math.min(...points.map((point) => point.x));
+      const maxX = Math.max(...points.map((point) => point.x));
+      const minY = Math.min(...points.map((point) => point.y));
+      const maxY = Math.max(...points.map((point) => point.y));
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const scaleX = svg.clientWidth / 1200;
+      const scaleY = svg.clientHeight / 720;
+      scroller.scrollTo({
+        left: Math.max(0, centerX * scaleX - scroller.clientWidth / 2),
+        top: Math.max(0, centerY * scaleY - scroller.clientHeight / 2),
+        behavior: "smooth"
+      });
     }
 
     function showOverview() {
-      dayButtons.forEach((button) => button.classList.remove("active"));
-      document.querySelectorAll(".route-path").forEach((path) => {
-        path.classList.remove("active", "dim");
-        path.classList.add("overview");
+      stopPlayback();
+      updateDetail({
+        day: "总览",
+        theme: "全程先飞后车再飞",
+        route: "无锡飞石河子，车行赛里木湖、伊犁、那拉提、奎屯、独山子、乌鲁木齐周边，再从石河子返程。",
+        desc: "总览模式只保留淡色完整路线和全部关键节点。点击某一天后，会进入逐段动画。",
+        stay: "按天查看夜宿点",
+        tags: ["飞机线", "汽车线", "夜宿点"]
       });
-      document.querySelectorAll(".node").forEach((node) => {
-        node.classList.remove("active", "dim");
-      });
-      document.querySelectorAll(".stay-card-group").forEach((card) => {
-        card.style.opacity = "1";
-      });
-      infoPanel.innerHTML = `
-        <h2>全程总览</h2>
-        <p>从无锡飞石河子后，汽车线依次经过赛里木湖、果子沟、伊犁草原、奎屯、独山子、乌鲁木齐、天山天池、南山牧场，最后回石河子飞无锡。</p>
-      `;
+      document.querySelectorAll(".mini-day, .rail-item").forEach((button) => button.classList.remove("active"));
+      document.querySelectorAll(".segment").forEach((path) => path.classList.remove("visible"));
+      document.querySelectorAll(".node").forEach((node) => node.classList.add("visible"));
+      document.querySelectorAll(".night-callout").forEach((callout) => callout.classList.add("visible"));
     }
 
-    renderCards();
-    renderPaths();
-    renderNodes();
-    renderStayCards();
-    showOverview();
+    function stopPlayback() {
+      if (playTimer) clearInterval(playTimer);
+      playTimer = null;
+      document.getElementById("playButton").textContent = "播放路线";
+    }
+
+    function playRoute() {
+      if (playTimer) {
+        stopPlayback();
+        return;
+      }
+      document.getElementById("playButton").textContent = "暂停";
+      selectDay(0);
+      playTimer = setInterval(() => {
+        if (activeIndex >= itinerary.length - 1) {
+          stopPlayback();
+          return;
+        }
+        selectDay(activeIndex + 1);
+      }, 2300);
+    }
+
+    renderMap();
+    renderControls();
+    selectDay(0);
+    document.getElementById("playButton").addEventListener("click", playRoute);
     document.getElementById("overviewButton").addEventListener("click", showOverview);
   </script>
 </body>
