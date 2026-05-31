@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>新疆 8 日行程地图</title>
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQepLi8D3Uhrn2RjR9bSY0uCwV6kP4="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <style>
+    :root {
+      --ink: #1c2430;
+      --muted: #617080;
+      --line: #d8e0e8;
+      --panel: #ffffff;
+      --soft: #f5f7fa;
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --accent: #b45309;
+      --shadow: 0 18px 44px rgba(20, 36, 50, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    body {
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+      background: var(--soft);
+      letter-spacing: 0;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(360px, 420px) 1fr;
+    }
+
+    .sidebar {
+      position: relative;
+      z-index: 2;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      padding: 24px 24px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.15;
+      font-weight: 760;
+    }
+
+    .summary {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .stat b {
+      display: block;
+      min-width: 0;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .days {
+      overflow: auto;
+      padding: 14px 14px 22px;
+    }
+
+    .day-card {
+      width: 100%;
+      min-width: 0;
+      padding: 14px;
+      margin: 0 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 160ms ease, box-shadow 160ms ease,
+        transform 160ms ease;
+    }
+
+    .day-card:hover,
+    .day-card:focus-visible {
+      border-color: rgba(15, 118, 110, 0.55);
+      box-shadow: 0 10px 28px rgba(25, 55, 70, 0.12);
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    .day-card.active {
+      border-color: var(--brand);
+      box-shadow: inset 4px 0 0 var(--brand), 0 10px 28px rgba(25, 55, 70, 0.1);
+    }
+
+    .day-top {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--brand);
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .theme {
+      min-width: 0;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 720;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .route {
+      margin: 11px 0 8px;
+      font-size: 17px;
+      line-height: 1.35;
+      font-weight: 720;
+    }
+
+    .desc {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .spots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .spot {
+      max-width: 100%;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #eef6f5;
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    #map {
+      width: 100%;
+      min-width: 0;
+      height: 100vh;
+      background: #dbe6ec;
+    }
+
+    #map .leaflet-proxy {
+      display: none;
+    }
+
+    .map-note {
+      position: absolute;
+      right: 18px;
+      bottom: 18px;
+      z-index: 500;
+      max-width: min(360px, calc(100vw - 36px));
+      padding: 12px 14px;
+      border: 1px solid rgba(216, 224, 232, 0.9);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 12px 34px rgba(20, 36, 50, 0.14);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .marker {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .marker.flight {
+      background: #2563eb;
+    }
+
+    .marker.return {
+      background: #7c3aed;
+    }
+
+    .marker.scenic {
+      background: #c2410c;
+    }
+
+    .popup h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .popup p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 52vh 48vh;
+      }
+
+      .sidebar {
+        grid-row: 2;
+        height: 48vh;
+        border-top: 1px solid var(--line);
+        border-right: 0;
+      }
+
+      #map {
+        grid-row: 1;
+        height: 52vh;
+      }
+
+      .header {
+        padding: 16px 16px 12px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .stats {
+        margin-top: 12px;
+      }
+
+      .days {
+        padding: 10px;
+      }
+
+      .map-note {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar" aria-label="行程列表">
+      <section class="header">
+        <h1>新疆 8 日行程地图</h1>
+        <p class="summary">从无锡飞抵石河子，沿赛里木湖、伊犁草原、独山子峡谷、天山天池到乌鲁木齐周边，再由石河子返程。</p>
+        <div class="stats" aria-label="行程概览">
+          <div class="stat"><b>8 天</b><span>完整行程</span></div>
+          <div class="stat"><b>2 程</b><span>往返航班</span></div>
+          <div class="stat"><b>14+</b><span>重点地点</span></div>
+        </div>
+      </section>
+      <section class="days" id="days"></section>
+    </aside>
+    <section id="map" aria-label="路线地图"></section>
+    <div class="map-note">点击左侧每天行程或地图标记，可查看当天路线和核心安排。景点坐标为方便展示的近似位置。</div>
+  </main>
+
+  <script>
+    const itinerary = [
+      {
+        day: 1,
+        theme: "抵达入住",
+        route: "昆山/无锡 → 石河子",
+        desc: "出发、乘机、抵达、入住。航班：无锡 08:00—13:20 石河子。",
+        spots: ["无锡硕放机场", "石河子"],
+        color: "#2563eb",
+        type: "flight",
+        points: [
+          { name: "无锡", coords: [31.4944, 120.4294], note: "08:00 起飞" },
+          { name: "石河子", coords: [44.3061, 86.0806], note: "13:20 抵达，入住" }
+        ]
+      },
+      {
+        day: 2,
+        theme: "湖景与公路桥",
+        route: "赛里木湖 → 果子沟大桥 → 可克达拉/伊宁方向",
+        desc: "以高山湖泊、公路桥景和伊犁河谷路景为主。",
+        spots: ["赛里木湖", "果子沟大桥", "伊宁方向"],
+        color: "#0f766e",
+        type: "scenic",
+        points: [
+          { name: "赛里木湖", coords: [44.6139, 81.1743], note: "湖景拍照、环湖观景" },
+          { name: "果子沟大桥", coords: [44.4556, 80.9622], note: "公路桥景观" },
+          { name: "伊宁/可克达拉方向", coords: [43.94, 81.28], note: "前往伊犁河谷住宿方向" }
+        ]
+      },
+      {
+        day: 3,
+        theme: "草原风景",
+        route: "那拉提大草原 → 新源/巩留方向",
+        desc: "核心游览那拉提大草原，包含空中草原风景。",
+        spots: ["那拉提大草原", "空中草原", "新源/巩留方向"],
+        color: "#16a34a",
+        type: "scenic",
+        points: [
+          { name: "那拉提大草原", coords: [43.2625, 84.2704], note: "草原、山谷、空中草原" },
+          { name: "新源/巩留方向", coords: [43.4304, 83.2629], note: "草原游览后前往住宿方向" }
+        ]
+      },
+      {
+        day: 4,
+        theme: "花海与民俗街区",
+        route: "天山花海 → 喀赞其民俗村 → 博乐/双河/奎屯方向",
+        desc: "花海拍照、民俗街区游览，随后向北疆方向移动。",
+        spots: ["天山花海", "喀赞其民俗村", "奎屯方向"],
+        color: "#db2777",
+        type: "scenic",
+        points: [
+          { name: "天山花海", coords: [43.9631, 81.1808], note: "花海拍照" },
+          { name: "喀赞其民俗村", coords: [43.9089, 81.3267], note: "民俗街区游览" },
+          { name: "奎屯方向", coords: [44.4269, 84.9023], note: "前往博乐/双河/奎屯方向" }
+        ]
+      },
+      {
+        day: 5,
+        theme: "峡谷地貌",
+        route: "独山子大峡谷 → 乌鲁木齐/昌吉方向",
+        desc: "以独山子大峡谷地貌景观为主。",
+        spots: ["独山子大峡谷", "昌吉方向", "乌鲁木齐方向"],
+        color: "#c2410c",
+        type: "scenic",
+        points: [
+          { name: "独山子大峡谷", coords: [44.0923, 84.8062], note: "峡谷地貌、观景平台" },
+          { name: "乌鲁木齐/昌吉方向", coords: [43.8256, 87.6168], note: "前往乌鲁木齐都市圈方向" }
+        ]
+      },
+      {
+        day: 6,
+        theme: "展馆、天池与晚宴",
+        route: "和田玉展览馆 → 天山天池 → 红酒晚宴",
+        desc: "包含展馆/购物属性安排，也有天池景区与晚宴。",
+        spots: ["和田玉展览馆", "天山天池", "红酒晚宴"],
+        color: "#0891b2",
+        type: "scenic",
+        points: [
+          { name: "乌鲁木齐市区", coords: [43.8256, 87.6168], note: "和田玉展览馆、城市安排" },
+          { name: "天山天池", coords: [43.8943, 88.1201], note: "天池景区游览" },
+          { name: "红酒晚宴", coords: [43.8256, 87.6168], note: "晚宴安排" }
+        ]
+      },
+      {
+        day: 7,
+        theme: "展馆体验与牧场",
+        route: "新疆宝藏馆 → 边疆之花 → 南山牧场",
+        desc: "展馆/体验类安排与南山牧场风景结合。",
+        spots: ["新疆宝藏馆", "边疆之花", "南山牧场"],
+        color: "#7c3aed",
+        type: "scenic",
+        points: [
+          { name: "新疆宝藏馆", coords: [43.8256, 87.6168], note: "展馆体验类安排" },
+          { name: "边疆之花", coords: [43.797, 87.604], note: "体验类安排" },
+          { name: "南山牧场", coords: [43.4509, 87.1798], note: "牧场风景" }
+        ]
+      },
+      {
+        day: 8,
+        theme: "返程",
+        route: "石河子 → 无锡",
+        desc: "返程回家。航班：石河子 14:05—18:40 无锡。",
+        spots: ["石河子", "无锡"],
+        color: "#6d28d9",
+        type: "return",
+        points: [
+          { name: "石河子", coords: [44.3061, 86.0806], note: "14:05 起飞" },
+          { name: "无锡", coords: [31.4944, 120.4294], note: "18:40 抵达" }
+        ]
+      }
+    ];
+
+    const map = L.map("map", {
+      zoomControl: true,
+      scrollWheelZoom: true
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    const routeLayer = L.layerGroup().addTo(map);
+    const allBounds = L.latLngBounds([]);
+    const dayButtons = [];
+    const dayLayers = [];
+
+    function makeIcon(day, type) {
+      return L.divIcon({
+        className: "",
+        html: `<div class="marker ${type}">${day}</div>`,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        popupAnchor: [0, -18]
+      });
+    }
+
+    function renderCards() {
+      const days = document.getElementById("days");
+      itinerary.forEach((item, index) => {
+        const button = document.createElement("button");
+        button.className = "day-card";
+        button.type = "button";
+        button.innerHTML = `
+          <div class="day-top">
+            <span class="badge">第${item.day}天</span>
+            <span class="theme">${item.theme}</span>
+          </div>
+          <div class="route">${item.route}</div>
+          <p class="desc">${item.desc}</p>
+          <div class="spots">${item.spots.map((spot) => `<span class="spot">${spot}</span>`).join("")}</div>
+        `;
+        button.addEventListener("click", () => focusDay(index));
+        days.appendChild(button);
+        dayButtons.push(button);
+      });
+    }
+
+    function renderMap() {
+      itinerary.forEach((item) => {
+        const coords = item.points.map((point) => point.coords);
+        const group = L.layerGroup().addTo(routeLayer);
+
+        L.polyline(coords, {
+          color: item.color,
+          weight: item.day === 1 || item.day === 8 ? 3 : 5,
+          opacity: item.day === 1 || item.day === 8 ? 0.55 : 0.82,
+          dashArray: item.day === 1 || item.day === 8 ? "8 10" : null
+        }).addTo(group);
+
+        item.points.forEach((point) => {
+          allBounds.extend(point.coords);
+          L.marker(point.coords, { icon: makeIcon(item.day, item.type) })
+            .bindPopup(`
+              <div class="popup">
+                <h2>第${item.day}天 · ${point.name}</h2>
+                <p>${point.note}</p>
+                <p>${item.route}</p>
+              </div>
+            `)
+            .addTo(group);
+        });
+
+        dayLayers.push(group);
+      });
+
+      map.fitBounds(allBounds, { padding: [36, 36] });
+    }
+
+    function focusDay(index) {
+      const item = itinerary[index];
+      const bounds = L.latLngBounds(item.points.map((point) => point.coords));
+
+      dayButtons.forEach((button, buttonIndex) => {
+        button.classList.toggle("active", buttonIndex === index);
+      });
+
+      dayLayers.forEach((layer, layerIndex) => {
+        layer.eachLayer((entry) => {
+          if (entry.setStyle) {
+            entry.setStyle({
+              opacity: layerIndex === index ? 0.95 : 0.18,
+              weight: layerIndex === index ? 6 : 3
+            });
+          }
+        });
+      });
+
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: item.points.length === 1 ? 9 : 10 });
+      const firstPoint = item.points[0];
+      L.popup()
+        .setLatLng(firstPoint.coords)
+        .setContent(`
+          <div class="popup">
+            <h2>第${item.day}天 · ${item.theme}</h2>
+            <p>${item.desc}</p>
+          </div>
+        `)
+        .openOn(map);
+    }
+
+    renderCards();
+    renderMap();
+    focusDay(0);
+  </script>
+</body>
+</html>
