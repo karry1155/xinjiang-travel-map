@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>新疆 8 日路线动画</title>
+  <title>新疆 8 日路线地图</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css" />
+  <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
   <style>
     :root {
-      --ink: #18212c;
-      --muted: #687583;
-      --panel: rgba(255, 255, 255, 0.9);
-      --line: rgba(32, 49, 64, 0.14);
-      --land: #eef4ee;
-      --water: #cfe8f0;
-      --road: #bf5b23;
-      --flight: #2463eb;
-      --return: #6d35c6;
+      --ink: #17212b;
+      --muted: #667483;
+      --panel: rgba(255, 255, 255, 0.92);
+      --line: rgba(27, 42, 55, 0.14);
       --teal: #0f766e;
-      --gold: #a76118;
-      --shadow: 0 22px 60px rgba(22, 34, 45, 0.18);
+      --road: #c05a22;
+      --flight: #2563eb;
+      --return: #6d35c6;
+      --gold: #a45a13;
+      --shadow: 0 22px 64px rgba(17, 30, 42, 0.2);
     }
 
     * {
@@ -27,14 +27,14 @@
     html,
     body {
       width: 100%;
-      min-height: 100%;
+      height: 100%;
       margin: 0;
       overflow: hidden;
     }
 
     body {
       color: var(--ink);
-      background: #e7eef2;
+      background: #edf3f6;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
         "Microsoft YaHei", sans-serif;
       letter-spacing: 0;
@@ -49,33 +49,22 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)),
-        #e7eef2;
     }
 
-    .map-layer {
+    #map {
       position: absolute;
       inset: 0;
-      padding: 78px 22px 126px 390px;
+      background: #dce8ee;
     }
 
-    .map-scroll {
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      border: 1px solid rgba(32, 49, 64, 0.12);
-      border-radius: 8px;
-      background: #f8fbfb;
-      box-shadow: 0 18px 44px rgba(22, 34, 45, 0.12);
-    }
-
-    .route-map {
-      display: block;
-      width: 100%;
-      min-width: 920px;
-      height: 100%;
-      min-height: 570px;
+    .shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(237, 243, 246, 0.8), rgba(237, 243, 246, 0.12) 38%, rgba(237, 243, 246, 0)),
+        linear-gradient(180deg, rgba(237, 243, 246, 0.78), rgba(237, 243, 246, 0) 30%);
     }
 
     .topbar {
@@ -88,18 +77,13 @@
       gap: 12px;
       align-items: center;
       justify-content: space-between;
-      min-height: 42px;
-    }
-
-    .title-block {
-      min-width: 0;
     }
 
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 25px;
       line-height: 1.15;
-      font-weight: 800;
+      font-weight: 820;
     }
 
     .caption {
@@ -116,31 +100,28 @@
     }
 
     .control-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
       min-height: 38px;
-      padding: 0 12px;
-      border: 1px solid rgba(32, 49, 64, 0.16);
+      padding: 0 13px;
+      border: 1px solid rgba(27, 42, 55, 0.16);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.9);
       color: var(--ink);
-      box-shadow: 0 8px 20px rgba(22, 34, 45, 0.08);
+      box-shadow: 0 8px 20px rgba(17, 30, 42, 0.08);
       cursor: pointer;
       font-size: 13px;
       font-weight: 760;
     }
 
     .control-button.primary {
-      border-color: rgba(15, 118, 110, 0.48);
-      background: #0f766e;
+      border-color: rgba(15, 118, 110, 0.5);
+      background: var(--teal);
       color: #fff;
     }
 
     .control-button:hover,
     .control-button:focus-visible {
-      outline: none;
       border-color: var(--teal);
+      outline: none;
     }
 
     .side-panel {
@@ -152,7 +133,7 @@
       width: 344px;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
-      border: 1px solid rgba(32, 49, 64, 0.14);
+      border: 1px solid rgba(27, 42, 55, 0.14);
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow);
@@ -169,14 +150,14 @@
       margin: 0 0 8px;
       color: var(--gold);
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 820;
     }
 
     .trip-summary h2 {
       margin: 0;
       font-size: 28px;
       line-height: 1.15;
-      font-weight: 820;
+      font-weight: 840;
     }
 
     .trip-summary p {
@@ -198,7 +179,7 @@
       padding: 9px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: rgba(248, 251, 251, 0.78);
+      background: rgba(248, 251, 252, 0.82);
     }
 
     .metric b,
@@ -235,14 +216,14 @@
       background: #e9f6f3;
       color: var(--teal);
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 820;
     }
 
     .current-day h3 {
       margin: 14px 0 8px;
       font-size: 24px;
       line-height: 1.2;
-      font-weight: 820;
+      font-weight: 840;
     }
 
     .route-text {
@@ -250,7 +231,7 @@
       color: var(--ink);
       font-size: 15px;
       line-height: 1.55;
-      font-weight: 720;
+      font-weight: 740;
     }
 
     .day-desc {
@@ -263,16 +244,16 @@
     .night {
       margin-top: 16px;
       padding: 12px 13px;
-      border: 1px solid rgba(167, 97, 24, 0.22);
+      border: 1px solid rgba(164, 90, 19, 0.22);
       border-radius: 8px;
-      background: #fff8ec;
+      background: #fff8ed;
     }
 
     .night span {
       display: block;
-      color: #95530f;
+      color: #934f0f;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 820;
     }
 
     .night b {
@@ -295,7 +276,7 @@
       background: #edf6f4;
       color: #155e57;
       font-size: 12px;
-      font-weight: 720;
+      font-weight: 740;
     }
 
     .day-list {
@@ -303,7 +284,7 @@
       gap: 7px;
       padding: 14px;
       border-top: 1px solid var(--line);
-      background: rgba(248, 251, 251, 0.7);
+      background: rgba(248, 251, 252, 0.72);
     }
 
     .mini-day {
@@ -356,7 +337,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 13px;
-      font-weight: 720;
+      font-weight: 740;
     }
 
     .mini-day em {
@@ -376,10 +357,10 @@
       grid-template-columns: repeat(8, minmax(84px, 1fr));
       gap: 8px;
       padding: 10px;
-      border: 1px solid rgba(32, 49, 64, 0.14);
+      border: 1px solid rgba(27, 42, 55, 0.14);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.88);
-      box-shadow: 0 18px 44px rgba(22, 34, 45, 0.12);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 18px 44px rgba(17, 30, 42, 0.12);
       backdrop-filter: blur(16px);
       overflow-x: auto;
     }
@@ -388,9 +369,9 @@
       min-width: 84px;
       min-height: 58px;
       padding: 9px;
-      border: 1px solid rgba(32, 49, 64, 0.1);
+      border: 1px solid rgba(27, 42, 55, 0.1);
       border-radius: 8px;
-      background: rgba(248, 251, 251, 0.72);
+      background: rgba(248, 251, 252, 0.76);
       color: inherit;
       text-align: left;
       cursor: pointer;
@@ -414,186 +395,72 @@
       overflow: hidden;
       color: var(--ink);
       font-size: 12px;
-      font-weight: 720;
+      font-weight: 740;
       line-height: 1.25;
     }
 
-    .land {
-      fill: var(--land);
-      stroke: #b9c9bd;
-      stroke-width: 2;
+    .maplibregl-ctrl-bottom-left,
+    .maplibregl-ctrl-bottom-right {
+      z-index: 7;
     }
 
-    .region {
-      fill: none;
-      stroke: #d1dbd4;
-      stroke-width: 1.4;
-      stroke-dasharray: 5 8;
+    .travel-marker {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(17, 30, 42, 0.25);
+      font-size: 12px;
+      font-weight: 850;
     }
 
-    .water {
-      fill: var(--water);
-      stroke: #9fc4d2;
-      stroke-width: 1.2;
+    .travel-marker.flight {
+      background: var(--flight);
     }
 
-    .terrain {
-      fill: none;
-      stroke: #d4c2a8;
-      stroke-linecap: round;
-      stroke-width: 2;
-      opacity: 0.72;
+    .night-marker {
+      min-width: 154px;
+      padding: 9px 11px;
+      border: 1px solid rgba(164, 90, 19, 0.22);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 14px 28px rgba(17, 30, 42, 0.16);
+      color: var(--ink);
+      opacity: 0 !important;
+      visibility: hidden;
+      transition: opacity 220ms ease, visibility 220ms ease;
+      pointer-events: none;
     }
 
-    .all-route {
-      fill: none;
-      stroke-width: 4;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: 0.18;
+    .night-marker.visible {
+      opacity: 1 !important;
+      visibility: visible;
     }
 
-    .all-route.flight,
-    .segment.flight {
-      stroke: var(--flight);
-      stroke-dasharray: 11 13;
-    }
-
-    .all-route.car,
-    .segment.car {
-      stroke: var(--road);
-    }
-
-    .all-route.return,
-    .segment.return {
-      stroke: var(--return);
-      stroke-dasharray: 11 13;
-    }
-
-    .segment {
-      fill: none;
-      stroke-width: 9;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: 0;
-      filter: drop-shadow(0 10px 9px rgba(22, 34, 45, 0.18));
-      transition: opacity 240ms ease;
-    }
-
-    .segment.visible {
-      opacity: 1;
-      animation: drawRoute 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-
-    .node {
-      opacity: 0.42;
-      transition: opacity 220ms ease, transform 220ms ease;
-      transform-box: fill-box;
-      transform-origin: center;
-    }
-
-    .node.visible {
-      opacity: 1;
-      transform: scale(1.03);
-    }
-
-    .node circle {
-      fill: #fff;
-      stroke: #96a8b3;
-      stroke-width: 3;
-    }
-
-    .node.visible circle {
-      stroke: var(--teal);
-      stroke-width: 5;
-    }
-
-    .node.flight-node.visible circle {
-      stroke: var(--flight);
-    }
-
-    .node-label {
-      fill: #1d2935;
-      font-size: 19px;
-      font-weight: 790;
-      paint-order: stroke;
-      stroke: rgba(248, 251, 251, 0.94);
-      stroke-linejoin: round;
-      stroke-width: 5;
-    }
-
-    .node-sub {
-      fill: var(--muted);
-      font-size: 13px;
-      font-weight: 680;
-      paint-order: stroke;
-      stroke: rgba(248, 251, 251, 0.94);
-      stroke-linejoin: round;
-      stroke-width: 4;
-    }
-
-    .node-mark {
-      fill: #47616f;
-      font-size: 13px;
-      font-weight: 900;
-      text-anchor: middle;
-      dominant-baseline: central;
-    }
-
-    .night-callout {
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 240ms ease, transform 240ms ease;
-    }
-
-    .night-callout.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .callout-box {
-      fill: #fff;
-      stroke: rgba(32, 49, 64, 0.14);
-      stroke-width: 1.5;
-      filter: drop-shadow(0 12px 18px rgba(22, 34, 45, 0.13));
-    }
-
-    .callout-title {
-      fill: #995312;
-      font-size: 14px;
+    .night-marker span {
+      display: block;
+      color: var(--gold);
+      font-size: 12px;
       font-weight: 820;
     }
 
-    .callout-place {
-      fill: #1d2935;
-      font-size: 16px;
-      font-weight: 790;
-    }
-
-    .day-pill {
-      fill: var(--teal);
-    }
-
-    .day-pill-text {
-      fill: #fff;
-      font-size: 13px;
-      font-weight: 850;
-      text-anchor: middle;
-      dominant-baseline: central;
-    }
-
-    @keyframes drawRoute {
-      from {
-        stroke-dashoffset: var(--route-length);
-      }
-      to {
-        stroke-dashoffset: 0;
-      }
+    .night-marker b {
+      display: block;
+      margin-top: 4px;
+      font-size: 14px;
+      line-height: 1.28;
+      white-space: nowrap;
     }
 
     @media (max-width: 980px) {
       html,
       body {
+        height: auto;
+        min-height: 100%;
         overflow: auto;
       }
 
@@ -601,13 +468,23 @@
         min-height: 100vh;
         height: auto;
         display: grid;
-        grid-template-rows: auto 54vh auto;
+        grid-template-rows: auto 54vh auto auto;
         overflow: visible;
       }
 
-      .side-panel,
+      #map {
+        position: relative;
+        grid-row: 2;
+        height: 54vh;
+        min-height: 410px;
+      }
+
+      .shade {
+        display: none;
+      }
+
       .topbar,
-      .map-layer,
+      .side-panel,
       .bottom-rail {
         position: relative;
         inset: auto;
@@ -620,7 +497,7 @@
       .topbar {
         grid-row: 1;
         padding: 14px 12px 8px;
-        align-items: flex-start;
+        align-items: stretch;
         flex-direction: column;
       }
 
@@ -630,28 +507,12 @@
 
       .control-button {
         flex: 1 1 0;
-        justify-content: center;
-      }
-
-      .map-layer {
-        grid-row: 2;
-        padding: 0 10px 10px;
-        min-height: 0;
-      }
-
-      .map-scroll {
-        height: 100%;
-      }
-
-      .route-map {
-        min-width: 840px;
       }
 
       .side-panel {
         grid-row: 3;
         width: auto;
-        margin: 0 10px 10px;
-        max-height: none;
+        margin: 10px;
       }
 
       .trip-summary {
@@ -676,8 +537,6 @@
 
       .bottom-rail {
         grid-row: 4;
-        left: auto;
-        right: auto;
         margin: 0 10px 12px;
         grid-template-columns: repeat(8, 104px);
       }
@@ -686,10 +545,13 @@
 </head>
 <body>
   <main class="app">
+    <div id="map" aria-label="开源地图路线"></div>
+    <div class="shade"></div>
+
     <section class="topbar" aria-label="路线控制">
-      <div class="title-block">
-        <h1>新疆 8 日路线动画</h1>
-        <p class="caption">按天播放线路，先看动线，再看当天细节。</p>
+      <div>
+        <h1>新疆 8 日路线地图</h1>
+        <p class="caption">MapLibre + OpenStreetMap，按天播放飞机线和汽车线。</p>
       </div>
       <div class="controls">
         <button class="control-button primary" id="playButton" type="button">播放路线</button>
@@ -699,9 +561,9 @@
 
     <aside class="side-panel" aria-label="当前行程">
       <section class="trip-summary">
-        <p class="trip-kicker">TRIP ROUTE</p>
+        <p class="trip-kicker">OPEN MAP ROUTE</p>
         <h2>北疆环线调度</h2>
-        <p>从无锡飞石河子，车行伊犁、奎屯、乌鲁木齐周边，再由石河子返程。</p>
+        <p>真实开源地图底图上查看航班、车程、夜宿点，不再使用手绘 SVG。</p>
         <div class="metrics">
           <div class="metric"><b>8 天</b><span>行程</span></div>
           <div class="metric"><b>2 段</b><span>航班</span></div>
@@ -712,58 +574,25 @@
       <section class="day-list" id="dayList" aria-label="天数列表"></section>
     </aside>
 
-    <section class="map-layer" aria-label="路线地图">
-      <div class="map-scroll">
-        <svg class="route-map" id="routeMap" viewBox="0 0 1200 720" role="img" aria-label="新疆旅行路线动画图">
-          <defs>
-            <marker id="arrowRoad" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#bf5b23"></path>
-            </marker>
-            <marker id="arrowFlight" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2463eb"></path>
-            </marker>
-            <marker id="arrowReturn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#6d35c6"></path>
-            </marker>
-          </defs>
-
-          <rect width="1200" height="720" fill="#f8fbfb"></rect>
-          <path class="land" d="M92,154 L181,82 L330,60 L471,84 L575,70 L706,116 L842,96 L964,158 L1010,252 L971,350 L1018,458 L930,570 L766,612 L650,660 L508,626 L366,656 L240,604 L132,520 L90,382 L48,267 Z"></path>
-          <path class="region" d="M204,116 C318,190 452,184 560,148 C674,110 824,151 936,222"></path>
-          <path class="region" d="M130,494 C255,438 380,434 472,472 C582,516 700,496 820,426 C884,388 938,374 990,386"></path>
-          <path class="terrain" d="M220,548 C340,506 432,520 522,560 C642,608 732,556 856,516"></path>
-          <path class="terrain" d="M464,220 C558,180 660,186 752,218 C835,246 908,240 972,210"></path>
-          <ellipse class="water" cx="225" cy="318" rx="68" ry="32"></ellipse>
-          <ellipse class="water" cx="838" cy="232" rx="32" ry="18"></ellipse>
-          <text class="node-sub" x="84" y="82">路线会逐日绘制，不一次性压满信息</text>
-          <text class="node-label" x="84" y="56">新疆路线总图</text>
-          <g id="baseRoutes"></g>
-          <g id="segments"></g>
-          <g id="nodes"></g>
-          <g id="callouts"></g>
-        </svg>
-      </div>
-    </section>
-
     <nav class="bottom-rail" id="bottomRail" aria-label="行程进度"></nav>
   </main>
 
   <script>
     const places = {
-      wuxi: { name: "无锡", note: "航班端点", x: 1042, y: 614, kind: "flight" },
-      shihezi: { name: "石河子", note: "进出疆机场", x: 632, y: 214, kind: "flight" },
-      sailimu: { name: "赛里木湖", note: "湖景", x: 224, y: 318 },
-      guozigou: { name: "果子沟大桥", note: "桥景", x: 282, y: 344 },
-      yining: { name: "伊宁/可克达拉", note: "夜宿方向", x: 342, y: 384 },
-      nalati: { name: "那拉提草原", note: "空中草原", x: 472, y: 502 },
-      xinyuan: { name: "新源/巩留", note: "夜宿方向", x: 430, y: 474 },
-      flower: { name: "天山花海", note: "拍照", x: 362, y: 402 },
-      kazanqi: { name: "喀赞其", note: "民俗街区", x: 334, y: 418 },
-      kuitun: { name: "奎屯/双河/博乐", note: "北疆节点", x: 566, y: 270 },
-      dushanzi: { name: "独山子大峡谷", note: "峡谷地貌", x: 604, y: 304 },
-      urumqi: { name: "乌鲁木齐/昌吉", note: "城市停留", x: 778, y: 272 },
-      tianchi: { name: "天山天池", note: "景区", x: 838, y: 232 },
-      nanshan: { name: "南山牧场", note: "牧场风景", x: 748, y: 352 }
+      wuxi: { name: "无锡", note: "航班端点", coord: [120.312, 31.491], kind: "flight" },
+      shihezi: { name: "石河子", note: "进出疆机场", coord: [86.0806, 44.3061], kind: "flight" },
+      sailimu: { name: "赛里木湖", note: "湖景", coord: [81.1743, 44.6139] },
+      guozigou: { name: "果子沟大桥", note: "桥景", coord: [80.9622, 44.4556] },
+      yining: { name: "伊宁/可克达拉", note: "夜宿方向", coord: [81.28, 43.94] },
+      nalati: { name: "那拉提草原", note: "空中草原", coord: [84.2704, 43.2625] },
+      xinyuan: { name: "新源/巩留", note: "夜宿方向", coord: [83.2629, 43.4304] },
+      flower: { name: "天山花海", note: "拍照", coord: [81.1808, 43.9631] },
+      kazanqi: { name: "喀赞其", note: "民俗街区", coord: [81.3267, 43.9089] },
+      kuitun: { name: "奎屯/双河/博乐", note: "北疆节点", coord: [84.9023, 44.4269] },
+      dushanzi: { name: "独山子大峡谷", note: "峡谷地貌", coord: [84.8062, 44.0923] },
+      urumqi: { name: "乌鲁木齐/昌吉", note: "城市停留", coord: [87.6168, 43.8256] },
+      tianchi: { name: "天山天池", note: "景区", coord: [88.1201, 43.8943] },
+      nanshan: { name: "南山牧场", note: "牧场风景", coord: [87.1798, 43.4509] }
     };
 
     const itinerary = [
@@ -775,8 +604,7 @@
         stay: "石河子",
         tags: ["航班", "抵达", "入住"],
         mode: "flight",
-        path: ["wuxi", "shihezi"],
-        callout: { x: 654, y: 154 }
+        path: ["wuxi", "shihezi"]
       },
       {
         day: 2,
@@ -786,8 +614,7 @@
         stay: "伊宁/可克达拉方向",
         tags: ["赛里木湖", "果子沟", "伊犁"],
         mode: "car",
-        path: ["shihezi", "sailimu", "guozigou", "yining"],
-        callout: { x: 118, y: 376 }
+        path: ["shihezi", "sailimu", "guozigou", "yining"]
       },
       {
         day: 3,
@@ -797,8 +624,7 @@
         stay: "新源/巩留方向",
         tags: ["那拉提", "空中草原", "草原"],
         mode: "car",
-        path: ["yining", "nalati", "xinyuan"],
-        callout: { x: 470, y: 532 }
+        path: ["yining", "nalati", "xinyuan"]
       },
       {
         day: 4,
@@ -808,8 +634,7 @@
         stay: "奎屯/双河/博乐方向",
         tags: ["天山花海", "喀赞其", "转场"],
         mode: "car",
-        path: ["xinyuan", "flower", "kazanqi", "kuitun"],
-        callout: { x: 520, y: 318 }
+        path: ["xinyuan", "flower", "kazanqi", "kuitun"]
       },
       {
         day: 5,
@@ -819,8 +644,7 @@
         stay: "乌鲁木齐/昌吉方向",
         tags: ["独山子", "峡谷", "乌昌"],
         mode: "car",
-        path: ["kuitun", "dushanzi", "urumqi"],
-        callout: { x: 754, y: 314 }
+        path: ["kuitun", "dushanzi", "urumqi"]
       },
       {
         day: 6,
@@ -830,8 +654,7 @@
         stay: "乌鲁木齐/昌吉方向",
         tags: ["和田玉", "天山天池", "晚宴"],
         mode: "car",
-        path: ["urumqi", "tianchi", "urumqi"],
-        callout: { x: 846, y: 174 }
+        path: ["urumqi", "tianchi", "urumqi"]
       },
       {
         day: 7,
@@ -841,8 +664,7 @@
         stay: "乌鲁木齐/昌吉方向",
         tags: ["宝藏馆", "边疆之花", "南山牧场"],
         mode: "car",
-        path: ["urumqi", "nanshan", "urumqi"],
-        callout: { x: 842, y: 398 }
+        path: ["urumqi", "nanshan", "urumqi"]
       },
       {
         day: 8,
@@ -852,121 +674,246 @@
         stay: "回家",
         tags: ["石河子", "返程", "无锡"],
         mode: "return",
-        path: ["urumqi", "shihezi", "wuxi"],
-        callout: { x: 936, y: 544 }
+        path: ["urumqi", "shihezi", "wuxi"]
       }
     ];
 
-    const labelOffsets = {
-      wuxi: [18, -12],
-      shihezi: [18, -20],
-      sailimu: [-88, -20],
-      guozigou: [18, 5],
-      yining: [-18, 34],
-      nalati: [18, 8],
-      xinyuan: [-96, -2],
-      flower: [-94, -8],
-      kazanqi: [-72, 26],
-      kuitun: [18, -18],
-      dushanzi: [16, 30],
-      urumqi: [18, 3],
-      tianchi: [18, -10],
-      nanshan: [18, 24]
+    const colors = {
+      flight: "#2563eb",
+      car: "#c05a22",
+      return: "#6d35c6"
     };
 
-    const baseRoutes = document.getElementById("baseRoutes");
-    const segments = document.getElementById("segments");
-    const nodes = document.getElementById("nodes");
-    const callouts = document.getElementById("callouts");
-    const currentDay = document.getElementById("currentDay");
-    const dayList = document.getElementById("dayList");
-    const bottomRail = document.getElementById("bottomRail");
+    const dayButtons = [];
+    const railButtons = [];
+    const nightMarkers = [];
     let activeIndex = 0;
     let playTimer = null;
+    let mapReady = false;
+    let animationFrame = null;
 
-    function svgEl(tag, attrs = {}) {
-      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
-      Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
-      return el;
+    const openStreetMapStyle = {
+      version: 8,
+      sources: {
+        osm: {
+          type: "raster",
+          tiles: [
+            "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          ],
+          tileSize: 256,
+          attribution: "© OpenStreetMap contributors"
+        }
+      },
+      layers: [
+        {
+          id: "osm-raster",
+          type: "raster",
+          source: "osm",
+          paint: {
+            "raster-opacity": 0.88,
+            "raster-saturation": -0.18,
+            "raster-contrast": -0.06
+          }
+        }
+      ]
+    };
+
+    const map = new maplibregl.Map({
+      container: "map",
+      style: openStreetMapStyle,
+      center: [86.8, 43.7],
+      zoom: 5.2,
+      pitch: 0,
+      attributionControl: true
+    });
+    window.tripMap = map;
+
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
+
+    function coordinates(keys, mode) {
+      const raw = keys.map((key) => places[key].coord);
+      if (mode === "flight") return curvedLine(raw[0], raw[1], 80);
+      if (mode === "return") return [
+        ...straightLine(raw[0], raw[1], 24),
+        ...curvedLine(raw[1], raw[2], 80).slice(1)
+      ];
+      return raw.flatMap((point, index) => {
+        if (index === 0) return [point];
+        return straightLine(raw[index - 1], point, 24).slice(1);
+      });
     }
 
-    function pathD(item) {
-      const points = item.path.map((key) => places[key]);
-      if (item.mode === "flight") {
-        const [from, to] = points;
-        return `M ${from.x} ${from.y} C 970 350, 820 168, ${to.x} ${to.y}`;
-      }
-      if (item.mode === "return") {
-        const [from, mid, to] = points;
-        return `M ${from.x} ${from.y} L ${mid.x} ${mid.y} C 830 188, 970 364, ${to.x} ${to.y}`;
-      }
-      return points.map((point, i) => `${i ? "L" : "M"} ${point.x} ${point.y}`).join(" ");
+    function straightLine(a, b, steps) {
+      return Array.from({ length: steps + 1 }, (_, i) => {
+        const t = i / steps;
+        return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+      });
     }
 
-    function marker(mode) {
-      if (mode === "flight") return "url(#arrowFlight)";
-      if (mode === "return") return "url(#arrowReturn)";
-      return "url(#arrowRoad)";
+    function curvedLine(a, b, steps) {
+      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + Math.abs(a[0] - b[0]) * 0.12];
+      return Array.from({ length: steps + 1 }, (_, i) => {
+        const t = i / steps;
+        const x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * mid[0] + t * t * b[0];
+        const y = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * mid[1] + t * t * b[1];
+        return [x, y];
+      });
     }
 
-    function renderMap() {
-      itinerary.forEach((item) => {
-        const base = svgEl("path", {
-          d: pathD(item),
-          class: `all-route ${item.mode}`
-        });
-        baseRoutes.appendChild(base);
+    function routeFeature(item, visibleCoords = null) {
+      return {
+        type: "Feature",
+        properties: {
+          day: item.day,
+          mode: item.mode,
+          color: colors[item.mode],
+          dash: item.mode === "car" ? "solid" : "dash"
+        },
+        geometry: {
+          type: "LineString",
+          coordinates: visibleCoords || coordinates(item.path, item.mode)
+        }
+      };
+    }
 
-        const segment = svgEl("path", {
-          d: pathD(item),
-          class: `segment ${item.mode}`,
-          "data-day": item.day,
-          "marker-end": marker(item.mode)
-        });
-        segments.appendChild(segment);
+    function pointFeatures() {
+      return Object.entries(places).map(([key, place]) => ({
+        type: "Feature",
+        properties: {
+          key,
+          name: place.name,
+          note: place.note,
+          kind: place.kind || "spot"
+        },
+        geometry: {
+          type: "Point",
+          coordinates: place.coord
+        }
+      }));
+    }
+
+    function emptyCollection() {
+      return { type: "FeatureCollection", features: [] };
+    }
+
+    function allRoutes() {
+      return {
+        type: "FeatureCollection",
+        features: itinerary.map((item) => routeFeature(item))
+      };
+    }
+
+    function activeRoute(coords, item) {
+      return {
+        type: "FeatureCollection",
+        features: coords.length > 1 ? [routeFeature(item, coords)] : []
+      };
+    }
+
+    function addMapLayers() {
+      map.addSource("all-routes", { type: "geojson", data: allRoutes() });
+      map.addSource("active-route", { type: "geojson", data: emptyCollection() });
+      map.addSource("places", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: pointFeatures() }
       });
 
+      map.addLayer({
+        id: "all-routes-line",
+        type: "line",
+        source: "all-routes",
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": 3,
+          "line-opacity": 0.22
+        }
+      });
+
+      map.addLayer({
+        id: "active-route-glow",
+        type: "line",
+        source: "active-route",
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": 12,
+          "line-opacity": 0.16,
+          "line-blur": 3
+        }
+      });
+
+      map.addLayer({
+        id: "active-route-line",
+        type: "line",
+        source: "active-route",
+        layout: {
+          "line-cap": "round",
+          "line-join": "round"
+        },
+        paint: {
+          "line-color": ["get", "color"],
+          "line-width": 6,
+          "line-opacity": 0.96
+        }
+      });
+
+      map.addLayer({
+        id: "place-circles",
+        type: "circle",
+        source: "places",
+        paint: {
+          "circle-radius": ["case", ["==", ["get", "kind"], "flight"], 7, 6],
+          "circle-color": ["case", ["==", ["get", "kind"], "flight"], "#2563eb", "#0f766e"],
+          "circle-stroke-width": 2.5,
+          "circle-stroke-color": "#ffffff",
+          "circle-opacity": 0.88
+        }
+      });
+
+      map.addLayer({
+        id: "place-labels",
+        type: "symbol",
+        source: "places",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-size": 13,
+          "text-offset": [0, 1.25],
+          "text-anchor": "top",
+          "text-allow-overlap": false
+        },
+        paint: {
+          "text-color": "#17212b",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1.5
+        }
+      });
+    }
+
+    function addMarkers() {
       Object.entries(places).forEach(([key, place]) => {
-        const [dx, dy] = labelOffsets[key] || [18, -8];
-        const used = itinerary.filter((item) => item.path.includes(key)).map((item) => item.day);
-        const group = svgEl("g", {
-          class: `node ${place.kind === "flight" ? "flight-node" : ""}`,
-          "data-place": key,
-          "data-days": used.join(","),
-          transform: `translate(${place.x} ${place.y})`
+        const marker = document.createElement("div");
+        marker.className = `travel-marker ${place.kind === "flight" ? "flight" : ""}`;
+        marker.textContent = place.kind === "flight" ? "机" : "点";
+        marker.title = place.name;
+        marker.addEventListener("click", () => {
+          const day = itinerary.findIndex((item) => item.path.includes(key));
+          if (day >= 0) selectDay(day);
         });
-        group.innerHTML = `
-          <circle r="16"></circle>
-          <text class="node-mark" y="1">${place.kind === "flight" ? "机" : "点"}</text>
-          <text class="node-label" x="${dx}" y="${dy}">${place.name}</text>
-          <text class="node-sub" x="${dx}" y="${dy + 20}">${place.note}</text>
-        `;
-        if (used.length) group.addEventListener("click", () => selectDay(used[0] - 1));
-        nodes.appendChild(group);
+        new maplibregl.Marker({ element: marker, anchor: "center" })
+          .setLngLat(place.coord)
+          .addTo(map);
       });
 
       itinerary.forEach((item) => {
-        const group = svgEl("g", {
-          class: "night-callout",
-          "data-day": item.day,
-          transform: `translate(${item.callout.x} ${item.callout.y})`
-        });
-        const title = item.day === 8 ? "第8天 · 返程" : `第${item.day}天 · 夜宿`;
-        group.innerHTML = `
-          <rect class="callout-box" width="188" height="66" rx="8"></rect>
-          <rect class="day-pill" x="14" y="-13" width="42" height="26" rx="13"></rect>
-          <text class="day-pill-text" x="35" y="0">D${item.day}</text>
-          <text class="callout-title" x="14" y="28">${title}</text>
-          <text class="callout-place" x="14" y="52">${item.stay}</text>
-        `;
-        callouts.appendChild(group);
-      });
-
-      document.querySelectorAll(".segment").forEach((path) => {
-        const length = path.getTotalLength();
-        path.style.setProperty("--route-length", length);
-        path.style.strokeDasharray = length;
-        path.style.strokeDashoffset = length;
+        const endKey = item.day === 8 ? "wuxi" : item.path[item.path.length - 1];
+        const el = document.createElement("div");
+        el.className = "night-marker";
+        el.innerHTML = `<span>${item.day === 8 ? "第8天 · 返程" : `第${item.day}天 · 夜宿`}</span><b>${item.stay}</b>`;
+        const marker = new maplibregl.Marker({ element: el, anchor: "bottom", offset: [0, -18] })
+          .setLngLat(places[endKey].coord)
+          .addTo(map);
+        nightMarkers.push({ day: item.day, element: el, marker });
       });
     }
 
@@ -977,19 +924,21 @@
         listButton.type = "button";
         listButton.innerHTML = `<strong>D${item.day}</strong><span>${item.theme}</span><em>${item.mode === "flight" ? "飞" : item.mode === "return" ? "返" : "车"}</em>`;
         listButton.addEventListener("click", () => selectDay(index));
-        dayList.appendChild(listButton);
+        document.getElementById("dayList").appendChild(listButton);
+        dayButtons.push(listButton);
 
         const railButton = document.createElement("button");
         railButton.className = "rail-item";
         railButton.type = "button";
         railButton.innerHTML = `<b>DAY ${item.day}</b><span>${item.theme}</span>`;
         railButton.addEventListener("click", () => selectDay(index));
-        bottomRail.appendChild(railButton);
+        document.getElementById("bottomRail").appendChild(railButton);
+        railButtons.push(railButton);
       });
     }
 
     function updateDetail(item) {
-      currentDay.innerHTML = `
+      document.getElementById("currentDay").innerHTML = `
         <span class="day-index">第${item.day}天</span>
         <h3>${item.theme}</h3>
         <p class="route-text">${item.route}</p>
@@ -1002,75 +951,74 @@
       `;
     }
 
-    function selectDay(index) {
-      activeIndex = index;
-      const item = itinerary[index];
-      const activePlaces = new Set(item.path);
-
-      updateDetail(item);
-
-      document.querySelectorAll(".mini-day").forEach((button, i) => {
-        button.classList.toggle("active", i === index);
-      });
-      document.querySelectorAll(".rail-item").forEach((button, i) => {
-        button.classList.toggle("active", i === index);
-      });
-
-      document.querySelectorAll(".segment").forEach((path) => {
-        const active = Number(path.dataset.day) === item.day;
-        path.classList.toggle("visible", active);
-        if (active) {
-          path.style.animation = "none";
-          path.getBoundingClientRect();
-          path.style.animation = "";
-        }
-      });
-
-      document.querySelectorAll(".node").forEach((node) => {
-        node.classList.toggle("visible", activePlaces.has(node.dataset.place));
-      });
-
-      document.querySelectorAll(".night-callout").forEach((callout) => {
-        callout.classList.toggle("visible", Number(callout.dataset.day) === item.day);
-      });
-
-      panToRoute(item);
+    function boundsForCoords(coords) {
+      return coords.reduce((bounds, coord) => bounds.extend(coord), new maplibregl.LngLatBounds(coords[0], coords[0]));
     }
 
-    function panToRoute(item) {
-      const scroller = document.querySelector(".map-scroll");
-      const svg = document.getElementById("routeMap");
-      if (!scroller || !svg) return;
-      const points = item.path.map((key) => places[key]);
-      const minX = Math.min(...points.map((point) => point.x));
-      const maxX = Math.max(...points.map((point) => point.x));
-      const minY = Math.min(...points.map((point) => point.y));
-      const maxY = Math.max(...points.map((point) => point.y));
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-      const scaleX = svg.clientWidth / 1200;
-      const scaleY = svg.clientHeight / 720;
-      scroller.scrollTo({
-        left: Math.max(0, centerX * scaleX - scroller.clientWidth / 2),
-        top: Math.max(0, centerY * scaleY - scroller.clientHeight / 2),
-        behavior: "smooth"
+    function selectDay(index) {
+      if (!mapReady) return;
+      activeIndex = index;
+      const item = itinerary[index];
+      const coords = coordinates(item.path, item.mode);
+
+      updateDetail(item);
+      dayButtons.forEach((button, i) => button.classList.toggle("active", i === index));
+      railButtons.forEach((button, i) => button.classList.toggle("active", i === index));
+      nightMarkers.forEach((entry) => entry.element.classList.toggle("visible", entry.day === item.day));
+
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      map.getSource("active-route").setData(emptyCollection());
+      map.fitBounds(boundsForCoords(coords), {
+        padding: responsivePadding(),
+        maxZoom: item.mode === "flight" || item.mode === "return" ? 5.4 : 8.3,
+        duration: 900
       });
+      animateRoute(item, coords);
+    }
+
+    function responsivePadding() {
+      if (window.innerWidth <= 980) {
+        return { top: 70, right: 40, bottom: 80, left: 40 };
+      }
+      return { top: 110, right: 90, bottom: 120, left: 430 };
+    }
+
+    function animateRoute(item, coords) {
+      const duration = 1500;
+      const start = performance.now();
+
+      function tick(now) {
+        const progress = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const count = Math.max(2, Math.ceil(coords.length * eased));
+        map.getSource("active-route").setData(activeRoute(coords.slice(0, count), item));
+        if (progress < 1) animationFrame = requestAnimationFrame(tick);
+      }
+
+      animationFrame = requestAnimationFrame(tick);
     }
 
     function showOverview() {
+      if (!mapReady) return;
       stopPlayback();
-      updateDetail({
-        day: "总览",
-        theme: "全程先飞后车再飞",
-        route: "无锡飞石河子，车行赛里木湖、伊犁、那拉提、奎屯、独山子、乌鲁木齐周边，再从石河子返程。",
-        desc: "总览模式只保留淡色完整路线和全部关键节点。点击某一天后，会进入逐段动画。",
-        stay: "按天查看夜宿点",
-        tags: ["飞机线", "汽车线", "夜宿点"]
+      document.getElementById("currentDay").innerHTML = `
+        <span class="day-index">总览</span>
+        <h3>全程先飞后车再飞</h3>
+        <p class="route-text">无锡飞石河子，车行赛里木湖、伊犁、那拉提、奎屯、独山子、乌鲁木齐周边，再从石河子返程。</p>
+        <p class="day-desc">总览模式保留完整淡色路线和全部夜宿点。点击某一天后，进入逐段播放。</p>
+        <div class="chips"><span class="chip">飞机线</span><span class="chip">汽车线</span><span class="chip">夜宿点</span></div>
+      `;
+      dayButtons.forEach((button) => button.classList.remove("active"));
+      railButtons.forEach((button) => button.classList.remove("active"));
+      nightMarkers.forEach((entry) => entry.element.classList.add("visible"));
+      map.getSource("active-route").setData(emptyCollection());
+
+      const allCoords = itinerary.flatMap((item) => coordinates(item.path, item.mode));
+      map.fitBounds(boundsForCoords(allCoords), {
+        padding: responsivePadding(),
+        maxZoom: 5.6,
+        duration: 900
       });
-      document.querySelectorAll(".mini-day, .rail-item").forEach((button) => button.classList.remove("active"));
-      document.querySelectorAll(".segment").forEach((path) => path.classList.remove("visible"));
-      document.querySelectorAll(".node").forEach((node) => node.classList.add("visible"));
-      document.querySelectorAll(".night-callout").forEach((callout) => callout.classList.add("visible"));
     }
 
     function stopPlayback() {
@@ -1092,14 +1040,22 @@
           return;
         }
         selectDay(activeIndex + 1);
-      }, 2300);
+      }, 2500);
     }
 
-    renderMap();
-    renderControls();
-    selectDay(0);
+    map.on("load", () => {
+      addMapLayers();
+      addMarkers();
+      renderControls();
+      mapReady = true;
+      selectDay(0);
+    });
+
     document.getElementById("playButton").addEventListener("click", playRoute);
     document.getElementById("overviewButton").addEventListener("click", showOverview);
+    window.addEventListener("resize", () => {
+      if (mapReady) map.resize();
+    });
   </script>
 </body>
 </html>
