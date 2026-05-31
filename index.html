@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>新疆 8 日路线地图</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css" />
   <script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
@@ -10,19 +10,17 @@
     :root {
       --ink: #17212b;
       --muted: #667483;
-      --panel: rgba(255, 255, 255, 0.92);
+      --panel: rgba(255, 255, 255, 0.94);
       --line: rgba(27, 42, 55, 0.14);
       --teal: #0f766e;
       --road: #c05a22;
       --flight: #2563eb;
       --return: #6d35c6;
       --gold: #a45a13;
-      --shadow: 0 22px 64px rgba(17, 30, 42, 0.2);
+      --shadow: 0 18px 46px rgba(17, 30, 42, 0.18);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html,
     body {
@@ -40,9 +38,7 @@
       letter-spacing: 0;
     }
 
-    button {
-      font: inherit;
-    }
+    button { font: inherit; }
 
     .app {
       position: relative;
@@ -62,54 +58,96 @@
       inset: 0;
       z-index: 1;
       pointer-events: none;
-      background:
-        linear-gradient(90deg, rgba(237, 243, 246, 0.8), rgba(237, 243, 246, 0.12) 38%, rgba(237, 243, 246, 0)),
-        linear-gradient(180deg, rgba(237, 243, 246, 0.78), rgba(237, 243, 246, 0) 30%);
+      background: linear-gradient(
+        180deg,
+        rgba(237, 243, 246, 0.94),
+        rgba(237, 243, 246, 0.18) 150px,
+        rgba(237, 243, 246, 0) calc(100% - 170px),
+        rgba(237, 243, 246, 0.95)
+      );
     }
 
-    .topbar {
+    .top-card {
       position: absolute;
-      top: 18px;
-      right: 22px;
-      left: 390px;
+      top: max(12px, env(safe-area-inset-top));
+      right: 12px;
+      left: 12px;
       z-index: 5;
+      padding: 14px;
+      border: 1px solid rgba(27, 42, 55, 0.12);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .day-row {
       display: flex;
-      gap: 12px;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 25px;
-      line-height: 1.15;
-      font-weight: 820;
-    }
-
-    .caption {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .controls {
-      display: flex;
-      flex: 0 0 auto;
-      gap: 8px;
+    .day-chip {
+      display: inline-flex;
       align-items: center;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #e7f6f3;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    .mode-pill {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .top-card h1 {
+      margin: 9px 0 6px;
+      font-size: 22px;
+      line-height: 1.18;
+      font-weight: 840;
+    }
+
+    .route-line {
+      margin: 0;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 760;
+    }
+
+    .stay-line {
+      margin: 8px 0 0;
+      color: #95530f;
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 780;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
     }
 
     .control-button {
       min-height: 38px;
-      padding: 0 13px;
+      padding: 0 12px;
       border: 1px solid rgba(27, 42, 55, 0.16);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
       color: var(--ink);
-      box-shadow: 0 8px 20px rgba(17, 30, 42, 0.08);
       cursor: pointer;
       font-size: 13px;
-      font-weight: 760;
+      font-weight: 780;
     }
 
     .control-button.primary {
@@ -124,139 +162,80 @@
       outline: none;
     }
 
-    .side-panel {
+    .detail-sheet {
       position: absolute;
-      top: 18px;
-      bottom: 18px;
-      left: 18px;
+      right: 12px;
+      bottom: calc(92px + env(safe-area-inset-bottom));
+      left: 12px;
       z-index: 6;
-      width: 344px;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
+      display: none;
+      max-height: min(54vh, 430px);
+      padding: 16px;
       border: 1px solid rgba(27, 42, 55, 0.14);
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
-      overflow: hidden;
+      overflow-y: auto;
     }
 
-    .trip-summary {
-      padding: 22px 22px 16px;
-      border-bottom: 1px solid var(--line);
+    .detail-sheet.open { display: block; }
+
+    .sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
-    .trip-kicker {
-      margin: 0 0 8px;
-      color: var(--gold);
-      font-size: 13px;
-      font-weight: 820;
-    }
-
-    .trip-summary h2 {
+    .sheet-head h2 {
       margin: 0;
-      font-size: 28px;
-      line-height: 1.15;
-      font-weight: 840;
+      font-size: 18px;
+      line-height: 1.2;
     }
 
-    .trip-summary p {
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 16px;
-    }
-
-    .metric {
-      min-width: 0;
-      padding: 9px;
+    .close-button {
+      width: 34px;
+      height: 34px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: rgba(248, 251, 252, 0.82);
+      background: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
     }
 
-    .metric b,
-    .metric span {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .metric b {
-      font-size: 17px;
-      line-height: 1.2;
-    }
-
-    .metric span {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .current-day {
-      min-height: 0;
-      padding: 22px;
-      overflow: auto;
-    }
-
-    .day-index {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 0 10px;
-      border-radius: 999px;
-      background: #e9f6f3;
-      color: var(--teal);
-      font-size: 13px;
-      font-weight: 820;
-    }
-
-    .current-day h3 {
-      margin: 14px 0 8px;
-      font-size: 24px;
-      line-height: 1.2;
-      font-weight: 840;
-    }
-
-    .route-text {
+    .detail-route {
       margin: 0;
-      color: var(--ink);
       font-size: 15px;
       line-height: 1.55;
-      font-weight: 740;
+      font-weight: 760;
     }
 
-    .day-desc {
+    .detail-desc {
       margin: 12px 0 0;
       color: var(--muted);
       font-size: 14px;
       line-height: 1.65;
     }
 
-    .night {
-      margin-top: 16px;
+    .night-box {
+      margin-top: 14px;
       padding: 12px 13px;
       border: 1px solid rgba(164, 90, 19, 0.22);
       border-radius: 8px;
       background: #fff8ed;
     }
 
-    .night span {
+    .night-box span {
       display: block;
       color: #934f0f;
       font-size: 12px;
       font-weight: 820;
     }
 
-    .night b {
+    .night-box b {
       display: block;
       margin-top: 4px;
       font-size: 16px;
@@ -267,7 +246,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 7px;
-      margin-top: 16px;
+      margin-top: 14px;
     }
 
     .chip {
@@ -279,266 +258,151 @@
       font-weight: 740;
     }
 
-    .day-list {
-      display: grid;
-      gap: 7px;
-      padding: 14px;
-      border-top: 1px solid var(--line);
-      background: rgba(248, 251, 252, 0.72);
-    }
-
-    .mini-day {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 9px;
-      align-items: center;
-      width: 100%;
-      min-height: 38px;
-      padding: 7px 9px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      background: transparent;
-      color: inherit;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .mini-day:hover,
-    .mini-day:focus-visible,
-    .mini-day.active {
-      border-color: rgba(15, 118, 110, 0.28);
-      background: #fff;
-      outline: none;
-    }
-
-    .mini-day.active {
-      box-shadow: inset 3px 0 0 var(--teal);
-    }
-
-    .mini-day strong {
-      display: grid;
-      place-items: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #edf2f4;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .mini-day.active strong {
-      background: var(--teal);
-      color: #fff;
-    }
-
-    .mini-day span {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 13px;
-      font-weight: 740;
-    }
-
-    .mini-day em {
-      color: var(--muted);
-      font-size: 12px;
-      font-style: normal;
-      white-space: nowrap;
-    }
-
-    .bottom-rail {
+    .day-rail {
       position: absolute;
-      right: 22px;
-      bottom: 18px;
-      left: 390px;
+      right: 0;
+      bottom: env(safe-area-inset-bottom);
+      left: 0;
       z-index: 5;
       display: grid;
-      grid-template-columns: repeat(8, minmax(84px, 1fr));
+      grid-auto-flow: column;
+      grid-auto-columns: 74px;
       gap: 8px;
-      padding: 10px;
-      border: 1px solid rgba(27, 42, 55, 0.14);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 18px 44px rgba(17, 30, 42, 0.12);
+      padding: 10px 12px 12px;
+      border-top: 1px solid rgba(27, 42, 55, 0.12);
+      background: rgba(255, 255, 255, 0.93);
+      box-shadow: 0 -12px 34px rgba(17, 30, 42, 0.12);
       backdrop-filter: blur(16px);
       overflow-x: auto;
+      scroll-snap-type: x mandatory;
     }
 
-    .rail-item {
-      min-width: 84px;
-      min-height: 58px;
-      padding: 9px;
+    .day-button {
+      min-width: 74px;
+      min-height: 54px;
+      padding: 8px;
       border: 1px solid rgba(27, 42, 55, 0.1);
       border-radius: 8px;
-      background: rgba(248, 251, 252, 0.76);
+      background: rgba(248, 251, 252, 0.78);
       color: inherit;
-      text-align: left;
+      text-align: center;
       cursor: pointer;
+      scroll-snap-align: start;
     }
 
-    .rail-item.active {
+    .day-button.active {
       border-color: rgba(15, 118, 110, 0.42);
       background: #edf8f5;
+      box-shadow: inset 0 -3px 0 var(--teal);
     }
 
-    .rail-item b {
+    .day-button b {
       display: block;
       color: var(--teal);
       font-size: 12px;
       line-height: 1.2;
     }
 
-    .rail-item span {
+    .day-button span {
       display: block;
       margin-top: 6px;
       overflow: hidden;
       color: var(--ink);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 740;
       line-height: 1.25;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .maplibregl-ctrl-bottom-left,
-    .maplibregl-ctrl-bottom-right {
-      z-index: 7;
-    }
+    .maplibregl-ctrl-bottom-right { z-index: 7; }
 
-    .travel-marker {
+    .maplibregl-ctrl-bottom-right { margin-bottom: 88px; }
+
+    .stop-marker {
       display: grid;
       place-items: center;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       border: 3px solid #fff;
       border-radius: 50%;
       background: var(--teal);
       color: #fff;
       box-shadow: 0 10px 20px rgba(17, 30, 42, 0.25);
-      font-size: 12px;
-      font-weight: 850;
+      font-size: 13px;
+      font-weight: 860;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.82);
+      transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
     }
 
-    .travel-marker.flight {
-      background: var(--flight);
+    .stop-marker.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
     }
 
-    .night-marker {
-      min-width: 154px;
-      padding: 9px 11px;
-      border: 1px solid rgba(164, 90, 19, 0.22);
+    .stop-marker.flight { background: var(--flight); }
+    .stop-marker.start { background: #1d4ed8; }
+    .stop-marker.end { background: var(--gold); }
+
+    .stop-label {
+      min-width: 92px;
+      max-width: 150px;
+      padding: 7px 9px;
+      border: 1px solid rgba(27, 42, 55, 0.12);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 14px 28px rgba(17, 30, 42, 0.16);
+      box-shadow: 0 10px 22px rgba(17, 30, 42, 0.14);
       color: var(--ink);
-      opacity: 0 !important;
+      opacity: 0;
       visibility: hidden;
-      transition: opacity 220ms ease, visibility 220ms ease;
       pointer-events: none;
+      transition: opacity 160ms ease, visibility 160ms ease;
     }
 
-    .night-marker.visible {
-      opacity: 1 !important;
+    .stop-label.visible {
+      opacity: 1;
       visibility: visible;
     }
 
-    .night-marker span {
+    .stop-label span {
       display: block;
-      color: var(--gold);
-      font-size: 12px;
-      font-weight: 820;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 780;
     }
 
-    .night-marker b {
+    .stop-label b {
       display: block;
-      margin-top: 4px;
-      font-size: 14px;
-      line-height: 1.28;
+      margin-top: 3px;
+      overflow: hidden;
+      font-size: 13px;
+      line-height: 1.25;
       white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
-    @media (max-width: 980px) {
-      html,
-      body {
-        height: auto;
-        min-height: 100%;
-        overflow: auto;
-      }
-
-      .app {
-        min-height: 100vh;
-        height: auto;
-        display: grid;
-        grid-template-rows: auto 54vh auto auto;
-        overflow: visible;
-      }
-
-      #map {
-        position: relative;
-        grid-row: 2;
-        height: 54vh;
-        min-height: 410px;
-      }
-
-      .shade {
-        display: none;
-      }
-
-      .topbar,
-      .side-panel,
-      .bottom-rail {
-        position: relative;
-        inset: auto;
-        left: auto;
+    @media (min-width: 820px) {
+      .top-card {
         right: auto;
-        top: auto;
-        bottom: auto;
+        width: 390px;
       }
 
-      .topbar {
-        grid-row: 1;
-        padding: 14px 12px 8px;
-        align-items: stretch;
-        flex-direction: column;
+      .detail-sheet {
+        right: auto;
+        bottom: 98px;
+        width: 390px;
       }
 
-      .controls {
-        width: 100%;
-      }
-
-      .control-button {
-        flex: 1 1 0;
-      }
-
-      .side-panel {
-        grid-row: 3;
-        width: auto;
-        margin: 10px;
-      }
-
-      .trip-summary {
-        padding: 16px;
-      }
-
-      .trip-summary h2 {
-        font-size: 22px;
-      }
-
-      .current-day {
-        padding: 16px;
-      }
-
-      .current-day h3 {
-        font-size: 21px;
-      }
-
-      .day-list {
-        display: none;
-      }
-
-      .bottom-rail {
-        grid-row: 4;
-        margin: 0 10px 12px;
-        grid-template-columns: repeat(8, 104px);
+      .day-rail {
+        right: 18px;
+        bottom: 18px;
+        left: 18px;
+        border: 1px solid rgba(27, 42, 55, 0.12);
+        border-radius: 8px;
       }
     }
   </style>
@@ -548,33 +412,35 @@
     <div id="map" aria-label="开源地图路线"></div>
     <div class="shade"></div>
 
-    <section class="topbar" aria-label="路线控制">
-      <div>
-        <h1>新疆 8 日路线地图</h1>
-        <p class="caption">MapLibre + OpenStreetMap，按天播放飞机线和汽车线。</p>
+    <section class="top-card" aria-live="polite">
+      <div class="day-row">
+        <span class="day-chip" id="dayChip">第1天</span>
+        <span class="mode-pill" id="modePill">飞机</span>
       </div>
-      <div class="controls">
-        <button class="control-button primary" id="playButton" type="button">播放路线</button>
-        <button class="control-button" id="overviewButton" type="button">总览</button>
+      <h1 id="dayTitle">抵达入住</h1>
+      <p class="route-line" id="routeLine">无锡 → 石河子</p>
+      <p class="stay-line" id="stayLine">夜宿：石河子</p>
+      <div class="actions">
+        <button class="control-button primary" id="playButton" type="button">播放</button>
+        <button class="control-button" id="detailButton" type="button">详情</button>
       </div>
     </section>
 
-    <aside class="side-panel" aria-label="当前行程">
-      <section class="trip-summary">
-        <p class="trip-kicker">OPEN MAP ROUTE</p>
-        <h2>北疆环线调度</h2>
-        <p>真实开源地图底图上查看航班、车程、夜宿点，不再使用手绘 SVG。</p>
-        <div class="metrics">
-          <div class="metric"><b>8 天</b><span>行程</span></div>
-          <div class="metric"><b>2 段</b><span>航班</span></div>
-          <div class="metric"><b>7 晚</b><span>停留</span></div>
-        </div>
-      </section>
-      <section class="current-day" id="currentDay" aria-live="polite"></section>
-      <section class="day-list" id="dayList" aria-label="天数列表"></section>
+    <aside class="detail-sheet" id="detailSheet" aria-label="当天详情">
+      <div class="sheet-head">
+        <h2 id="sheetTitle">第1天 · 抵达入住</h2>
+        <button class="close-button" id="closeSheet" type="button" aria-label="关闭详情">×</button>
+      </div>
+      <p class="detail-route" id="detailRoute"></p>
+      <p class="detail-desc" id="detailDesc"></p>
+      <div class="night-box">
+        <span id="nightLabel">当天晚上</span>
+        <b id="nightPlace">石河子</b>
+      </div>
+      <div class="chips" id="chips"></div>
     </aside>
 
-    <nav class="bottom-rail" id="bottomRail" aria-label="行程进度"></nav>
+    <nav class="day-rail" id="dayRail" aria-label="选择行程天数"></nav>
   </main>
 
   <script>
@@ -583,110 +449,33 @@
       shihezi: { name: "石河子", note: "进出疆机场", coord: [86.0806, 44.3061], kind: "flight" },
       sailimu: { name: "赛里木湖", note: "湖景", coord: [81.1743, 44.6139] },
       guozigou: { name: "果子沟大桥", note: "桥景", coord: [80.9622, 44.4556] },
-      yining: { name: "伊宁/可克达拉", note: "夜宿方向", coord: [81.28, 43.94] },
-      nalati: { name: "那拉提草原", note: "空中草原", coord: [84.2704, 43.2625] },
+      yining: { name: "伊宁", note: "夜宿方向", coord: [81.28, 43.94] },
+      nalati: { name: "那拉提", note: "草原", coord: [84.2704, 43.2625] },
       xinyuan: { name: "新源/巩留", note: "夜宿方向", coord: [83.2629, 43.4304] },
       flower: { name: "天山花海", note: "拍照", coord: [81.1808, 43.9631] },
       kazanqi: { name: "喀赞其", note: "民俗街区", coord: [81.3267, 43.9089] },
-      kuitun: { name: "奎屯/双河/博乐", note: "北疆节点", coord: [84.9023, 44.4269] },
-      dushanzi: { name: "独山子大峡谷", note: "峡谷地貌", coord: [84.8062, 44.0923] },
-      urumqi: { name: "乌鲁木齐/昌吉", note: "城市停留", coord: [87.6168, 43.8256] },
+      kuitun: { name: "奎屯", note: "夜宿方向", coord: [84.9023, 44.4269] },
+      dushanzi: { name: "独山子峡谷", note: "峡谷地貌", coord: [84.8062, 44.0923] },
+      urumqi: { name: "乌鲁木齐", note: "夜宿方向", coord: [87.6168, 43.8256] },
       tianchi: { name: "天山天池", note: "景区", coord: [88.1201, 43.8943] },
-      nanshan: { name: "南山牧场", note: "牧场风景", coord: [87.1798, 43.4509] }
+      nanshan: { name: "南山牧场", note: "牧场", coord: [87.1798, 43.4509] }
     };
 
     const itinerary = [
-      {
-        day: 1,
-        theme: "抵达入住",
-        route: "无锡 → 石河子",
-        desc: "08:00 从无锡起飞，13:20 抵达石河子。当天只处理抵达和入住。",
-        stay: "石河子",
-        tags: ["航班", "抵达", "入住"],
-        mode: "flight",
-        path: ["wuxi", "shihezi"]
-      },
-      {
-        day: 2,
-        theme: "湖景与公路桥",
-        route: "石河子 → 赛里木湖 → 果子沟 → 伊宁/可克达拉",
-        desc: "这天核心是湖景和果子沟大桥，晚上停到伊犁方向。",
-        stay: "伊宁/可克达拉方向",
-        tags: ["赛里木湖", "果子沟", "伊犁"],
-        mode: "car",
-        path: ["shihezi", "sailimu", "guozigou", "yining"]
-      },
-      {
-        day: 3,
-        theme: "草原风景",
-        route: "伊宁方向 → 那拉提 → 新源/巩留",
-        desc: "重点看那拉提大草原和空中草原，晚上落在新源/巩留方向。",
-        stay: "新源/巩留方向",
-        tags: ["那拉提", "空中草原", "草原"],
-        mode: "car",
-        path: ["yining", "nalati", "xinyuan"]
-      },
-      {
-        day: 4,
-        theme: "花海与民俗",
-        route: "新源/巩留 → 天山花海 → 喀赞其 → 奎屯方向",
-        desc: "花海拍照后去喀赞其民俗村，再往奎屯/双河/博乐方向移动。",
-        stay: "奎屯/双河/博乐方向",
-        tags: ["天山花海", "喀赞其", "转场"],
-        mode: "car",
-        path: ["xinyuan", "flower", "kazanqi", "kuitun"]
-      },
-      {
-        day: 5,
-        theme: "峡谷地貌",
-        route: "奎屯方向 → 独山子大峡谷 → 乌鲁木齐/昌吉",
-        desc: "看独山子大峡谷，然后进入乌鲁木齐/昌吉方向。",
-        stay: "乌鲁木齐/昌吉方向",
-        tags: ["独山子", "峡谷", "乌昌"],
-        mode: "car",
-        path: ["kuitun", "dushanzi", "urumqi"]
-      },
-      {
-        day: 6,
-        theme: "展馆与天池",
-        route: "乌鲁木齐/昌吉 → 和田玉展览馆 → 天山天池 → 晚宴",
-        desc: "有展馆/购物属性安排，也有天山天池景区和红酒晚宴。",
-        stay: "乌鲁木齐/昌吉方向",
-        tags: ["和田玉", "天山天池", "晚宴"],
-        mode: "car",
-        path: ["urumqi", "tianchi", "urumqi"]
-      },
-      {
-        day: 7,
-        theme: "体验与牧场",
-        route: "乌鲁木齐/昌吉 → 新疆宝藏馆 → 边疆之花 → 南山牧场",
-        desc: "展馆/体验类安排后去南山牧场，看牧场风景。",
-        stay: "乌鲁木齐/昌吉方向",
-        tags: ["宝藏馆", "边疆之花", "南山牧场"],
-        mode: "car",
-        path: ["urumqi", "nanshan", "urumqi"]
-      },
-      {
-        day: 8,
-        theme: "返程",
-        route: "乌鲁木齐/昌吉 → 石河子 → 无锡",
-        desc: "回到石河子机场，14:05 起飞，18:40 抵达无锡。",
-        stay: "回家",
-        tags: ["石河子", "返程", "无锡"],
-        mode: "return",
-        path: ["urumqi", "shihezi", "wuxi"]
-      }
+      { day: 1, theme: "抵达入住", route: "无锡 → 石河子", desc: "08:00 从无锡起飞，13:20 抵达石河子。当天只处理抵达和入住。", stay: "石河子", tags: ["航班", "抵达", "入住"], mode: "flight", path: ["wuxi", "shihezi"] },
+      { day: 2, theme: "湖景与公路桥", route: "石河子 → 赛里木湖 → 果子沟 → 伊宁", desc: "这天核心是湖景和果子沟大桥，晚上停到伊犁方向。", stay: "伊宁/可克达拉方向", tags: ["赛里木湖", "果子沟", "伊犁"], mode: "car", path: ["shihezi", "sailimu", "guozigou", "yining"] },
+      { day: 3, theme: "草原风景", route: "伊宁 → 那拉提 → 新源/巩留", desc: "重点看那拉提大草原和空中草原，晚上落在新源/巩留方向。", stay: "新源/巩留方向", tags: ["那拉提", "空中草原", "草原"], mode: "car", path: ["yining", "nalati", "xinyuan"] },
+      { day: 4, theme: "花海与民俗", route: "新源/巩留 → 天山花海 → 喀赞其 → 奎屯", desc: "花海拍照后去喀赞其民俗村，再往奎屯/双河/博乐方向移动。", stay: "奎屯/双河/博乐方向", tags: ["天山花海", "喀赞其", "转场"], mode: "car", path: ["xinyuan", "flower", "kazanqi", "kuitun"] },
+      { day: 5, theme: "峡谷地貌", route: "奎屯 → 独山子大峡谷 → 乌鲁木齐", desc: "看独山子大峡谷，然后进入乌鲁木齐/昌吉方向。", stay: "乌鲁木齐/昌吉方向", tags: ["独山子", "峡谷", "乌鲁木齐"], mode: "car", path: ["kuitun", "dushanzi", "urumqi"] },
+      { day: 6, theme: "展馆与天池", route: "乌鲁木齐 → 天山天池 → 乌鲁木齐", desc: "有展馆/购物属性安排，也有天山天池景区和红酒晚宴。", stay: "乌鲁木齐/昌吉方向", tags: ["和田玉", "天山天池", "晚宴"], mode: "car", path: ["urumqi", "tianchi", "urumqi"] },
+      { day: 7, theme: "体验与牧场", route: "乌鲁木齐 → 南山牧场 → 乌鲁木齐", desc: "展馆/体验类安排后去南山牧场，看牧场风景。", stay: "乌鲁木齐/昌吉方向", tags: ["宝藏馆", "边疆之花", "南山牧场"], mode: "car", path: ["urumqi", "nanshan", "urumqi"] },
+      { day: 8, theme: "返程", route: "乌鲁木齐 → 石河子 → 无锡", desc: "回到石河子机场，14:05 起飞，18:40 抵达无锡。", stay: "回家", tags: ["石河子", "返程", "无锡"], mode: "return", path: ["urumqi", "shihezi", "wuxi"] }
     ];
 
-    const colors = {
-      flight: "#2563eb",
-      car: "#c05a22",
-      return: "#6d35c6"
-    };
-
+    const colors = { flight: "#2563eb", car: "#c05a22", return: "#6d35c6" };
     const dayButtons = [];
-    const railButtons = [];
-    const nightMarkers = [];
+    const stopMarkers = new Map();
+    const labelMarkers = new Map();
     let activeIndex = 0;
     let playTimer = null;
     let mapReady = false;
@@ -706,18 +495,12 @@
           attribution: "© OpenStreetMap contributors"
         }
       },
-      layers: [
-        {
-          id: "osm-raster",
-          type: "raster",
-          source: "osm",
-          paint: {
-            "raster-opacity": 0.88,
-            "raster-saturation": -0.18,
-            "raster-contrast": -0.06
-          }
-        }
-      ]
+      layers: [{
+        id: "osm-raster",
+        type: "raster",
+        source: "osm",
+        paint: { "raster-opacity": 0.9, "raster-saturation": -0.14, "raster-contrast": -0.04 }
+      }]
     };
 
     const map = new maplibregl.Map({
@@ -729,20 +512,13 @@
       attributionControl: true
     });
     window.tripMap = map;
-
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
 
     function coordinates(keys, mode) {
       const raw = keys.map((key) => places[key].coord);
-      if (mode === "flight") return curvedLine(raw[0], raw[1], 80);
-      if (mode === "return") return [
-        ...straightLine(raw[0], raw[1], 24),
-        ...curvedLine(raw[1], raw[2], 80).slice(1)
-      ];
-      return raw.flatMap((point, index) => {
-        if (index === 0) return [point];
-        return straightLine(raw[index - 1], point, 24).slice(1);
-      });
+      if (mode === "flight") return curvedLine(raw[0], raw[1], 84);
+      if (mode === "return") return [...straightLine(raw[0], raw[1], 24), ...curvedLine(raw[1], raw[2], 84).slice(1)];
+      return raw.flatMap((point, index) => index === 0 ? [point] : straightLine(raw[index - 1], point, 24).slice(1));
     }
 
     function straightLine(a, b, steps) {
@@ -765,194 +541,115 @@
     function routeFeature(item, visibleCoords = null) {
       return {
         type: "Feature",
-        properties: {
-          day: item.day,
-          mode: item.mode,
-          color: colors[item.mode],
-          dash: item.mode === "car" ? "solid" : "dash"
-        },
-        geometry: {
-          type: "LineString",
-          coordinates: visibleCoords || coordinates(item.path, item.mode)
-        }
+        properties: { day: item.day, mode: item.mode, color: colors[item.mode] },
+        geometry: { type: "LineString", coordinates: visibleCoords || coordinates(item.path, item.mode) }
       };
     }
 
-    function pointFeatures() {
-      return Object.entries(places).map(([key, place]) => ({
-        type: "Feature",
-        properties: {
-          key,
-          name: place.name,
-          note: place.note,
-          kind: place.kind || "spot"
-        },
-        geometry: {
-          type: "Point",
-          coordinates: place.coord
-        }
-      }));
-    }
-
-    function emptyCollection() {
-      return { type: "FeatureCollection", features: [] };
-    }
-
-    function allRoutes() {
-      return {
-        type: "FeatureCollection",
-        features: itinerary.map((item) => routeFeature(item))
-      };
-    }
-
-    function activeRoute(coords, item) {
-      return {
-        type: "FeatureCollection",
-        features: coords.length > 1 ? [routeFeature(item, coords)] : []
-      };
+    function collection(features = []) {
+      return { type: "FeatureCollection", features };
     }
 
     function addMapLayers() {
-      map.addSource("all-routes", { type: "geojson", data: allRoutes() });
-      map.addSource("active-route", { type: "geojson", data: emptyCollection() });
-      map.addSource("places", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: pointFeatures() }
-      });
+      map.addSource("all-routes", { type: "geojson", data: collection(itinerary.map((item) => routeFeature(item))) });
+      map.addSource("active-route", { type: "geojson", data: collection() });
 
       map.addLayer({
         id: "all-routes-line",
         type: "line",
         source: "all-routes",
-        paint: {
-          "line-color": ["get", "color"],
-          "line-width": 3,
-          "line-opacity": 0.22
-        }
+        paint: { "line-color": ["get", "color"], "line-width": 2, "line-opacity": 0.14 }
       });
 
       map.addLayer({
         id: "active-route-glow",
         type: "line",
         source: "active-route",
-        paint: {
-          "line-color": ["get", "color"],
-          "line-width": 12,
-          "line-opacity": 0.16,
-          "line-blur": 3
-        }
+        paint: { "line-color": ["get", "color"], "line-width": 12, "line-opacity": 0.16, "line-blur": 3 }
       });
 
       map.addLayer({
         id: "active-route-line",
         type: "line",
         source: "active-route",
-        layout: {
-          "line-cap": "round",
-          "line-join": "round"
-        },
-        paint: {
-          "line-color": ["get", "color"],
-          "line-width": 6,
-          "line-opacity": 0.96
-        }
-      });
-
-      map.addLayer({
-        id: "place-circles",
-        type: "circle",
-        source: "places",
-        paint: {
-          "circle-radius": ["case", ["==", ["get", "kind"], "flight"], 7, 6],
-          "circle-color": ["case", ["==", ["get", "kind"], "flight"], "#2563eb", "#0f766e"],
-          "circle-stroke-width": 2.5,
-          "circle-stroke-color": "#ffffff",
-          "circle-opacity": 0.88
-        }
-      });
-
-      map.addLayer({
-        id: "place-labels",
-        type: "symbol",
-        source: "places",
-        layout: {
-          "text-field": ["get", "name"],
-          "text-size": 13,
-          "text-offset": [0, 1.25],
-          "text-anchor": "top",
-          "text-allow-overlap": false
-        },
-        paint: {
-          "text-color": "#17212b",
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.5
-        }
+        layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": ["get", "color"], "line-width": 6, "line-opacity": 0.96 }
       });
     }
 
     function addMarkers() {
       Object.entries(places).forEach(([key, place]) => {
-        const marker = document.createElement("div");
-        marker.className = `travel-marker ${place.kind === "flight" ? "flight" : ""}`;
-        marker.textContent = place.kind === "flight" ? "机" : "点";
-        marker.title = place.name;
-        marker.addEventListener("click", () => {
-          const day = itinerary.findIndex((item) => item.path.includes(key));
-          if (day >= 0) selectDay(day);
-        });
-        new maplibregl.Marker({ element: marker, anchor: "center" })
-          .setLngLat(place.coord)
-          .addTo(map);
-      });
+        const pin = document.createElement("div");
+        pin.className = `stop-marker ${place.kind === "flight" ? "flight" : ""}`;
+        pin.textContent = "·";
+        pin.title = place.name;
+        new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(place.coord).addTo(map);
+        stopMarkers.set(key, pin);
 
-      itinerary.forEach((item) => {
-        const endKey = item.day === 8 ? "wuxi" : item.path[item.path.length - 1];
-        const el = document.createElement("div");
-        el.className = "night-marker";
-        el.innerHTML = `<span>${item.day === 8 ? "第8天 · 返程" : `第${item.day}天 · 夜宿`}</span><b>${item.stay}</b>`;
-        const marker = new maplibregl.Marker({ element: el, anchor: "bottom", offset: [0, -18] })
-          .setLngLat(places[endKey].coord)
-          .addTo(map);
-        nightMarkers.push({ day: item.day, element: el, marker });
+        const label = document.createElement("div");
+        label.className = "stop-label";
+        label.innerHTML = `<span>${place.note}</span><b>${place.name}</b>`;
+        new maplibregl.Marker({ element: label, anchor: "bottom", offset: [0, -22] }).setLngLat(place.coord).addTo(map);
+        labelMarkers.set(key, label);
       });
     }
 
-    function renderControls() {
+    function renderRail() {
+      const rail = document.getElementById("dayRail");
       itinerary.forEach((item, index) => {
-        const listButton = document.createElement("button");
-        listButton.className = "mini-day";
-        listButton.type = "button";
-        listButton.innerHTML = `<strong>D${item.day}</strong><span>${item.theme}</span><em>${item.mode === "flight" ? "飞" : item.mode === "return" ? "返" : "车"}</em>`;
-        listButton.addEventListener("click", () => selectDay(index));
-        document.getElementById("dayList").appendChild(listButton);
-        dayButtons.push(listButton);
-
-        const railButton = document.createElement("button");
-        railButton.className = "rail-item";
-        railButton.type = "button";
-        railButton.innerHTML = `<b>DAY ${item.day}</b><span>${item.theme}</span>`;
-        railButton.addEventListener("click", () => selectDay(index));
-        document.getElementById("bottomRail").appendChild(railButton);
-        railButtons.push(railButton);
+        const button = document.createElement("button");
+        button.className = "day-button";
+        button.type = "button";
+        button.innerHTML = `<b>D${item.day}</b><span>${item.theme}</span>`;
+        button.addEventListener("click", () => selectDay(index));
+        rail.appendChild(button);
+        dayButtons.push(button);
       });
     }
 
-    function updateDetail(item) {
-      document.getElementById("currentDay").innerHTML = `
-        <span class="day-index">第${item.day}天</span>
-        <h3>${item.theme}</h3>
-        <p class="route-text">${item.route}</p>
-        <p class="day-desc">${item.desc}</p>
-        <div class="night">
-          <span>${item.day === 8 ? "返程" : "当天晚上"}</span>
-          <b>${item.stay}</b>
-        </div>
-        <div class="chips">${item.tags.map((tag) => `<span class="chip">${tag}</span>`).join("")}</div>
-      `;
+    function updateText(item) {
+      document.getElementById("dayChip").textContent = `第${item.day}天`;
+      document.getElementById("modePill").textContent = item.mode === "flight" ? "飞机" : item.mode === "return" ? "返程" : "汽车";
+      document.getElementById("dayTitle").textContent = item.theme;
+      document.getElementById("routeLine").textContent = item.route;
+      document.getElementById("stayLine").textContent = item.day === 8 ? "返程：回家" : `夜宿：${item.stay}`;
+      document.getElementById("sheetTitle").textContent = `第${item.day}天 · ${item.theme}`;
+      document.getElementById("detailRoute").textContent = item.route;
+      document.getElementById("detailDesc").textContent = item.desc;
+      document.getElementById("nightLabel").textContent = item.day === 8 ? "返程" : "当天晚上";
+      document.getElementById("nightPlace").textContent = item.stay;
+      document.getElementById("chips").innerHTML = item.tags.map((tag) => `<span class="chip">${tag}</span>`).join("");
+    }
+
+    function uniqueKeys(keys) {
+      return [...new Set(keys)];
+    }
+
+    function updateMarkers(item) {
+      const visible = uniqueKeys(item.path);
+      stopMarkers.forEach((el, key) => {
+        const index = visible.indexOf(key);
+        el.classList.toggle("visible", index >= 0);
+        el.classList.toggle("start", index === 0);
+        el.classList.toggle("end", index === visible.length - 1);
+        el.textContent = index >= 0 ? String(index + 1) : "·";
+      });
+
+      labelMarkers.forEach((el, key) => {
+        const index = visible.indexOf(key);
+        const shouldLabel = index === 0 || index === visible.length - 1 || visible.length <= 2;
+        el.classList.toggle("visible", shouldLabel);
+      });
     }
 
     function boundsForCoords(coords) {
       return coords.reduce((bounds, coord) => bounds.extend(coord), new maplibregl.LngLatBounds(coords[0], coords[0]));
+    }
+
+    function responsivePadding() {
+      return window.innerWidth < 820
+        ? { top: 168, right: 42, bottom: 112, left: 42 }
+        : { top: 168, right: 90, bottom: 112, left: 430 };
     }
 
     function selectDay(index) {
@@ -961,70 +658,39 @@
       const item = itinerary[index];
       const coords = coordinates(item.path, item.mode);
 
-      updateDetail(item);
+      updateText(item);
+      updateMarkers(item);
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === index));
-      railButtons.forEach((button, i) => button.classList.toggle("active", i === index));
-      nightMarkers.forEach((entry) => entry.element.classList.toggle("visible", entry.day === item.day));
+      dayButtons[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      document.getElementById("detailSheet").classList.remove("open");
 
       if (animationFrame) cancelAnimationFrame(animationFrame);
-      map.getSource("active-route").setData(emptyCollection());
+      map.getSource("active-route").setData(collection());
       map.fitBounds(boundsForCoords(coords), {
         padding: responsivePadding(),
-        maxZoom: item.mode === "flight" || item.mode === "return" ? 5.4 : 8.3,
-        duration: 900
+        maxZoom: item.mode === "flight" || item.mode === "return" ? 5.4 : 8.8,
+        duration: 650
       });
       animateRoute(item, coords);
     }
 
-    function responsivePadding() {
-      if (window.innerWidth <= 980) {
-        return { top: 70, right: 40, bottom: 80, left: 40 };
-      }
-      return { top: 110, right: 90, bottom: 120, left: 430 };
-    }
-
     function animateRoute(item, coords) {
-      const duration = 1500;
+      const duration = 1100;
       const start = performance.now();
-
       function tick(now) {
         const progress = Math.min(1, (now - start) / duration);
         const eased = 1 - Math.pow(1 - progress, 3);
         const count = Math.max(2, Math.ceil(coords.length * eased));
-        map.getSource("active-route").setData(activeRoute(coords.slice(0, count), item));
+        map.getSource("active-route").setData(collection([routeFeature(item, coords.slice(0, count))]));
         if (progress < 1) animationFrame = requestAnimationFrame(tick);
       }
-
       animationFrame = requestAnimationFrame(tick);
-    }
-
-    function showOverview() {
-      if (!mapReady) return;
-      stopPlayback();
-      document.getElementById("currentDay").innerHTML = `
-        <span class="day-index">总览</span>
-        <h3>全程先飞后车再飞</h3>
-        <p class="route-text">无锡飞石河子，车行赛里木湖、伊犁、那拉提、奎屯、独山子、乌鲁木齐周边，再从石河子返程。</p>
-        <p class="day-desc">总览模式保留完整淡色路线和全部夜宿点。点击某一天后，进入逐段播放。</p>
-        <div class="chips"><span class="chip">飞机线</span><span class="chip">汽车线</span><span class="chip">夜宿点</span></div>
-      `;
-      dayButtons.forEach((button) => button.classList.remove("active"));
-      railButtons.forEach((button) => button.classList.remove("active"));
-      nightMarkers.forEach((entry) => entry.element.classList.add("visible"));
-      map.getSource("active-route").setData(emptyCollection());
-
-      const allCoords = itinerary.flatMap((item) => coordinates(item.path, item.mode));
-      map.fitBounds(boundsForCoords(allCoords), {
-        padding: responsivePadding(),
-        maxZoom: 5.6,
-        duration: 900
-      });
     }
 
     function stopPlayback() {
       if (playTimer) clearInterval(playTimer);
       playTimer = null;
-      document.getElementById("playButton").textContent = "播放路线";
+      document.getElementById("playButton").textContent = "播放";
     }
 
     function playRoute() {
@@ -1040,22 +706,25 @@
           return;
         }
         selectDay(activeIndex + 1);
-      }, 2500);
+      }, 2300);
     }
 
     map.on("load", () => {
       addMapLayers();
       addMarkers();
-      renderControls();
+      renderRail();
       mapReady = true;
       selectDay(0);
     });
 
     document.getElementById("playButton").addEventListener("click", playRoute);
-    document.getElementById("overviewButton").addEventListener("click", showOverview);
-    window.addEventListener("resize", () => {
-      if (mapReady) map.resize();
+    document.getElementById("detailButton").addEventListener("click", () => {
+      document.getElementById("detailSheet").classList.toggle("open");
     });
+    document.getElementById("closeSheet").addEventListener("click", () => {
+      document.getElementById("detailSheet").classList.remove("open");
+    });
+    window.addEventListener("resize", () => { if (mapReady) map.resize(); });
   </script>
 </body>
 </html>
