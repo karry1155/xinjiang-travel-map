@@ -81,6 +81,11 @@
       backdrop-filter: blur(16px);
     }
 
+    .top-card.expanded {
+      max-height: calc(100vh - 112px);
+      overflow-y: auto;
+    }
+
     .day-row {
       display: flex;
       align-items: center;
@@ -165,20 +170,10 @@
     }
 
     .detail-sheet {
-      position: absolute;
-      right: 12px;
-      bottom: calc(92px + env(safe-area-inset-bottom));
-      left: 12px;
-      z-index: 6;
       display: none;
-      max-height: min(54vh, 430px);
-      padding: 16px;
-      border: 1px solid rgba(27, 42, 55, 0.14);
-      border-radius: 8px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      overflow-y: auto;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
     }
 
     .detail-sheet.open { display: block; }
@@ -186,7 +181,7 @@
     .sheet-head {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -195,17 +190,6 @@
       margin: 0;
       font-size: 18px;
       line-height: 1.2;
-    }
-
-    .close-button {
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
     }
 
     .detail-route {
@@ -306,7 +290,7 @@
     }
 
     .day-button span {
-      display: block;
+      display: none;
       margin-top: 6px;
       overflow: hidden;
       color: var(--ink);
@@ -323,6 +307,7 @@
     .maplibregl-ctrl-bottom-right { margin-bottom: 88px; }
 
     .stop-marker {
+      position: relative;
       display: grid;
       place-items: center;
       width: 36px;
@@ -352,7 +337,25 @@
     .stop-marker.scenic { background: var(--teal); }
     .stop-marker.transfer { background: #7c3aed; }
 
+    .stop-marker.offset-left::after,
+    .stop-marker.offset-right::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 30px;
+      border-top: 2px dashed rgba(23, 33, 43, 0.46);
+    }
+
+    .stop-marker.offset-left::after {
+      left: 100%;
+    }
+
+    .stop-marker.offset-right::after {
+      right: 100%;
+    }
+
     .stop-label {
+      position: relative;
       min-width: auto;
       max-width: 120px;
       padding: 7px 10px;
@@ -370,6 +373,17 @@
     .stop-label.visible {
       opacity: 1;
       visibility: visible;
+    }
+
+    .stop-label::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -18px;
+      width: 0;
+      height: 18px;
+      border-left: 2px dashed rgba(23, 33, 43, 0.44);
+      transform: translateX(-50%);
     }
 
     .stop-label span {
@@ -400,12 +414,6 @@
         width: 390px;
       }
 
-      .detail-sheet {
-        right: auto;
-        bottom: 98px;
-        width: 390px;
-      }
-
       .day-rail {
         right: 18px;
         bottom: 18px;
@@ -432,21 +440,19 @@
       <div class="actions">
         <button class="control-button primary" id="detailButton" type="button">查看详情</button>
       </div>
+      <div class="detail-sheet" id="detailSheet" aria-label="当天详情">
+        <div class="sheet-head">
+          <h2 id="sheetTitle">第1天 · 抵达入住</h2>
+        </div>
+        <p class="detail-route" id="detailRoute"></p>
+        <p class="detail-desc" id="detailDesc"></p>
+        <div class="night-box">
+          <span id="nightLabel">当天晚上</span>
+          <b id="nightPlace">石河子</b>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
     </section>
-
-    <aside class="detail-sheet" id="detailSheet" aria-label="当天详情">
-      <div class="sheet-head">
-        <h2 id="sheetTitle">第1天 · 抵达入住</h2>
-        <button class="close-button" id="closeSheet" type="button" aria-label="关闭详情">×</button>
-      </div>
-      <p class="detail-route" id="detailRoute"></p>
-      <p class="detail-desc" id="detailDesc"></p>
-      <div class="night-box">
-        <span id="nightLabel">当天晚上</span>
-        <b id="nightPlace">石河子</b>
-      </div>
-      <div class="chips" id="chips"></div>
-    </aside>
 
     <nav class="day-rail" id="dayRail" aria-label="选择行程天数"></nav>
   </main>
@@ -588,7 +594,7 @@
         const pin = document.createElement("div");
         const isFlight = stop.role.includes("乘机") || stop.role.includes("航班");
         const roleClass = stopClass(stop, index, item);
-        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${roleClass}`;
+        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${roleClass} ${offsetClass(stop)}`;
         pin.textContent = stop.order;
         pin.title = stop.name;
         activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center", offset }).setLngLat(stop.coord).addTo(map));
@@ -605,8 +611,8 @@
     }
 
     function markerOffset(stop, index, item) {
-      if (stop.placeKey === "kunshan") return [-32, 0];
-      if (stop.placeKey === "wuxi-airport") return [32, 0];
+      if (stop.placeKey === "kunshan") return [-36, 0];
+      if (stop.placeKey === "wuxi-airport") return [36, 0];
       const sameCoordStops = item.numberedStops.filter((entry) => sameCoord(entry.coord, stop.coord));
       if (sameCoordStops.length > 1) {
         const duplicateIndex = sameCoordStops.findIndex((entry) => entry.placeKey === stop.placeKey);
@@ -620,6 +626,12 @@
       return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
     }
 
+    function offsetClass(stop) {
+      if (stop.placeKey === "kunshan") return "offset-left";
+      if (stop.placeKey === "wuxi-airport") return "offset-right";
+      return "";
+    }
+
     function stopClass(stop, index, item) {
       if (index === 0) return "start";
       if (index === item.numberedStops.length - 1) return "end";
@@ -628,6 +640,8 @@
     }
 
     function labelMarkerOffset(stop, index, item, pinOffset) {
+      if (stop.placeKey === "kunshan") return [-54, -28];
+      if (stop.placeKey === "wuxi-airport") return [54, -28];
       const middleOffsets = [-62, 62, -42, 42, 0];
       const x = pinOffset[0] + (index === 0 || index === item.numberedStops.length - 1 ? 0 : middleOffsets[index % middleOffsets.length]);
       const y = pinOffset[1] - 28 - (index % 2) * 18;
@@ -640,7 +654,7 @@
         const button = document.createElement("button");
         button.className = "day-button";
         button.type = "button";
-        button.innerHTML = `<b>D${item.day}</b><span>${shortTitle(item)}</span>`;
+        button.innerHTML = `<b>D${item.day}</b>`;
         button.addEventListener("click", () => selectDay(index));
         rail.appendChild(button);
         dayButtons.push(button);
@@ -694,7 +708,7 @@
       addMarkersForDay(item);
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === index));
       dayButtons[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-      document.getElementById("detailSheet").classList.remove("open");
+      setDetailOpen(false);
 
       if (animationFrame) cancelAnimationFrame(animationFrame);
       map.getSource("active-route").setData(collection());
@@ -753,11 +767,14 @@
       });
     });
 
+    function setDetailOpen(open) {
+      document.querySelector(".top-card").classList.toggle("expanded", open);
+      document.getElementById("detailSheet").classList.toggle("open", open);
+      document.getElementById("detailButton").textContent = open ? "关闭详情" : "查看详情";
+    }
+
     document.getElementById("detailButton").addEventListener("click", () => {
-      document.getElementById("detailSheet").classList.toggle("open");
-    });
-    document.getElementById("closeSheet").addEventListener("click", () => {
-      document.getElementById("detailSheet").classList.remove("open");
+      setDetailOpen(!document.getElementById("detailSheet").classList.contains("open"));
     });
     window.addEventListener("resize", () => { if (mapReady) map.resize(); });
   </script>
