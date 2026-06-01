@@ -337,70 +337,6 @@
     .stop-marker.scenic { background: var(--teal); }
     .stop-marker.transfer { background: #7c3aed; }
 
-    .stop-label {
-      position: relative;
-      min-width: auto;
-      max-width: 120px;
-      padding: 7px 10px;
-      border: 0;
-      border-radius: 8px;
-      background: var(--teal);
-      box-shadow: 0 10px 22px rgba(17, 30, 42, 0.14);
-      color: #fff;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 160ms ease, visibility 160ms ease;
-    }
-
-    .stop-label.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .stop-label::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -18px;
-      width: 0;
-      height: 18px;
-      border-left: 2px dashed rgba(23, 33, 43, 0.44);
-      transform: translateX(-50%);
-    }
-
-    .stop-label.label-left::after {
-      left: auto;
-      right: 16px;
-    }
-
-    .stop-label.label-right::after {
-      left: 16px;
-      transform: none;
-    }
-
-    .stop-label span {
-      display: none;
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 11px;
-      font-weight: 780;
-    }
-
-    .stop-label b {
-      display: block;
-      margin-top: 3px;
-      overflow: hidden;
-      font-size: 13px;
-      line-height: 1.25;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .stop-label.start { background: #1d4ed8; }
-    .stop-label.scenic { background: var(--teal); }
-    .stop-label.transfer { background: #7c3aed; }
-    .stop-label.end { background: var(--gold); }
-
     @media (min-width: 820px) {
       .top-card {
         right: auto;
@@ -505,15 +441,7 @@
 
     function coordinates(item) {
       const raw = stopCoords(item);
-      const mode = modeKey(item);
-      if (mode === "flight") {
-        if (raw.length > 2) return [...straightLine(raw[0], raw[1], 16), ...curvedLine(raw[1], raw[raw.length - 1], 84).slice(1)];
-        return curvedLine(raw[0], raw[1], 84);
-      }
-      if (mode === "return") {
-        if (raw.length > 2) return [...curvedLine(raw[0], raw[1], 84), ...straightLine(raw[1], raw[2], 16).slice(1)];
-        return curvedLine(raw[0], raw[1], 84);
-      }
+      if (raw.length < 2) return raw;
       return raw.flatMap((point, index) => index === 0 ? [point] : straightLine(raw[index - 1], point, 24).slice(1));
     }
 
@@ -521,16 +449,6 @@
       return Array.from({ length: steps + 1 }, (_, i) => {
         const t = i / steps;
         return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-      });
-    }
-
-    function curvedLine(a, b, steps) {
-      const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + Math.abs(a[0] - b[0]) * 0.12];
-      return Array.from({ length: steps + 1 }, (_, i) => {
-        const t = i / steps;
-        const x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * mid[0] + t * t * b[0];
-        const y = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * mid[1] + t * t * b[1];
-        return [x, y];
       });
     }
 
@@ -555,7 +473,7 @@
         id: "all-routes-line",
         type: "line",
         source: "all-routes",
-        paint: { "line-color": ["get", "color"], "line-width": 2, "line-opacity": 0.1 }
+        paint: { "line-color": ["get", "color"], "line-width": 2, "line-opacity": 0 }
       });
 
       map.addLayer({
@@ -581,7 +499,6 @@
 
     function addMarkersForDay(item) {
       clearActiveMarkers();
-      const renderedLabels = new Set();
       item.numberedStops.forEach((stop, index) => {
         const pin = document.createElement("div");
         const isFlight = stop.role.includes("乘机") || stop.role.includes("航班");
@@ -590,20 +507,7 @@
         pin.textContent = stop.order;
         pin.title = stop.name;
         activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(stop.coord).addTo(map));
-
-        const label = document.createElement("div");
-        label.className = `stop-label visible ${roleClass} ${labelDirectionClass(stop, index, item)}`;
-        const labelText = stop.shortLabel || stop.name;
-        if (!renderedLabels.has(labelText)) {
-          renderedLabels.add(labelText);
-          label.innerHTML = `<span>${stop.role}</span><b>${labelText}</b>`;
-          activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "bottom", offset: labelMarkerOffset(stop, index, item) }).setLngLat(stop.coord).addTo(map));
-        }
       });
-    }
-
-    function sameCoord(a, b) {
-      return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
     }
 
     function stopClass(stop, index, item) {
@@ -611,25 +515,6 @@
       if (index === item.numberedStops.length - 1) return "end";
       if (stop.role.includes("转场") || stop.role.includes("落脚") || stop.role.includes("晚餐")) return "transfer";
       return "scenic";
-    }
-
-    function labelDirectionClass(stop, index, item) {
-      if (stop.placeKey === "kunshan") return "label-left";
-      if (stop.placeKey === "wuxi-airport") return "label-right";
-      if (index > 0 && index < item.numberedStops.length - 1) {
-        return index % 2 === 0 ? "label-left" : "label-right";
-      }
-      return "";
-    }
-
-    function labelMarkerOffset(stop, index, item) {
-      if (stop.placeKey === "kunshan") return [-58, -42];
-      if (stop.placeKey === "wuxi-airport") return [54, -78];
-      const middleOffsets = [-62, 62, -42, 42, 0];
-      const duplicateLift = item.numberedStops.filter((entry) => sameCoord(entry.coord, stop.coord)).length > 1 ? index * 10 : 0;
-      const x = index === 0 || index === item.numberedStops.length - 1 ? 0 : middleOffsets[index % middleOffsets.length];
-      const y = -28 - (index % 2) * 18 - duplicateLift;
-      return [x, y];
     }
 
     function renderRail() {
