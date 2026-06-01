@@ -116,6 +116,7 @@
     }
 
     .route-line {
+      display: none;
       margin: 0;
       color: var(--ink);
       font-size: 14px;
@@ -124,6 +125,7 @@
     }
 
     .stay-line {
+      display: none;
       margin: 8px 0 0;
       color: #95530f;
       font-size: 13px;
@@ -133,9 +135,9 @@
 
     .actions {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 8px;
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     .control-button {
@@ -347,16 +349,18 @@
     .stop-marker.flight { background: var(--flight); }
     .stop-marker.start { background: #1d4ed8; }
     .stop-marker.end { background: var(--gold); }
+    .stop-marker.scenic { background: var(--teal); }
+    .stop-marker.transfer { background: #7c3aed; }
 
     .stop-label {
-      min-width: 92px;
-      max-width: 150px;
-      padding: 7px 9px;
-      border: 1px solid rgba(27, 42, 55, 0.12);
+      min-width: auto;
+      max-width: 120px;
+      padding: 7px 10px;
+      border: 0;
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.94);
+      background: var(--teal);
       box-shadow: 0 10px 22px rgba(17, 30, 42, 0.14);
-      color: var(--ink);
+      color: #fff;
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -369,8 +373,8 @@
     }
 
     .stop-label span {
-      display: block;
-      color: var(--muted);
+      display: none;
+      color: rgba(255, 255, 255, 0.78);
       font-size: 11px;
       font-weight: 780;
     }
@@ -384,6 +388,11 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+
+    .stop-label.start { background: #1d4ed8; }
+    .stop-label.scenic { background: var(--teal); }
+    .stop-label.transfer { background: #7c3aed; }
+    .stop-label.end { background: var(--gold); }
 
     @media (min-width: 820px) {
       .top-card {
@@ -420,10 +429,8 @@
       <h1 id="dayTitle">抵达入住</h1>
       <p class="route-line" id="routeLine">无锡 → 石河子</p>
       <p class="stay-line" id="stayLine">夜宿：石河子</p>
-      <p class="caption" id="driveLine">昆山到无锡机场约1-1.5小时车程</p>
       <div class="actions">
-        <button class="control-button primary" id="playButton" type="button">播放</button>
-        <button class="control-button" id="detailButton" type="button">详情</button>
+        <button class="control-button primary" id="detailButton" type="button">查看详情</button>
       </div>
     </section>
 
@@ -450,7 +457,6 @@
     let tripData = null;
     let activeMarkers = [];
     let activeIndex = 0;
-    let playTimer = null;
     let mapReady = false;
     let animationFrame = null;
 
@@ -482,7 +488,8 @@
       center: [86.8, 43.7],
       zoom: 5.2,
       pitch: 0,
-      attributionControl: true
+      attributionControl: true,
+      renderWorldCopies: false
     });
     window.tripMap = map;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
@@ -575,29 +582,56 @@
 
     function addMarkersForDay(item) {
       clearActiveMarkers();
+      const renderedLabels = new Set();
       item.numberedStops.forEach((stop, index) => {
-        const offset = markerOffset(stop, item);
+        const offset = markerOffset(stop, index, item);
         const pin = document.createElement("div");
         const isFlight = stop.role.includes("乘机") || stop.role.includes("航班");
-        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${index === 0 ? "start" : ""} ${index === item.numberedStops.length - 1 ? "end" : ""}`;
+        const roleClass = stopClass(stop, index, item);
+        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${roleClass}`;
         pin.textContent = stop.order;
         pin.title = stop.name;
         activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center", offset }).setLngLat(stop.coord).addTo(map));
 
-        const shouldLabel = index === 0 || index === item.numberedStops.length - 1 || item.numberedStops.length <= 2;
-        if (shouldLabel) {
-          const label = document.createElement("div");
-          label.className = "stop-label visible";
-          label.innerHTML = `<span>${stop.role}</span><b>${stop.shortLabel || stop.name}</b>`;
-          activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "bottom", offset: [offset[0], offset[1] - 22] }).setLngLat(stop.coord).addTo(map));
+        const label = document.createElement("div");
+        label.className = `stop-label visible ${roleClass}`;
+        const labelText = stop.shortLabel || stop.name;
+        if (!renderedLabels.has(labelText)) {
+          renderedLabels.add(labelText);
+          label.innerHTML = `<span>${stop.role}</span><b>${labelText}</b>`;
+          activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "bottom", offset: labelMarkerOffset(stop, index, item, offset) }).setLngLat(stop.coord).addTo(map));
         }
       });
     }
 
-    function markerOffset(stop) {
-      if (stop.placeKey === "kunshan") return [-24, 0];
-      if (stop.placeKey === "wuxi-airport") return [24, 0];
+    function markerOffset(stop, index, item) {
+      if (stop.placeKey === "kunshan") return [-32, 0];
+      if (stop.placeKey === "wuxi-airport") return [32, 0];
+      const sameCoordStops = item.numberedStops.filter((entry) => sameCoord(entry.coord, stop.coord));
+      if (sameCoordStops.length > 1) {
+        const duplicateIndex = sameCoordStops.findIndex((entry) => entry.placeKey === stop.placeKey);
+        const offsets = [[0, -18], [22, 0], [-22, 0], [0, 18], [26, 18], [-26, 18]];
+        return offsets[duplicateIndex] || [0, 0];
+      }
       return [0, 0];
+    }
+
+    function sameCoord(a, b) {
+      return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
+    }
+
+    function stopClass(stop, index, item) {
+      if (index === 0) return "start";
+      if (index === item.numberedStops.length - 1) return "end";
+      if (stop.role.includes("转场") || stop.role.includes("落脚") || stop.role.includes("晚餐")) return "transfer";
+      return "scenic";
+    }
+
+    function labelMarkerOffset(stop, index, item, pinOffset) {
+      const middleOffsets = [-62, 62, -42, 42, 0];
+      const x = pinOffset[0] + (index === 0 || index === item.numberedStops.length - 1 ? 0 : middleOffsets[index % middleOffsets.length]);
+      const y = pinOffset[1] - 28 - (index % 2) * 18;
+      return [x, y];
     }
 
     function renderRail() {
@@ -627,7 +661,6 @@
       document.getElementById("dayTitle").textContent = item.focus;
       document.getElementById("routeLine").textContent = routeText(item);
       document.getElementById("stayLine").textContent = item.overnightLabel;
-      document.getElementById("driveLine").textContent = item.estimatedDriving;
       document.getElementById("sheetTitle").textContent = `第${item.day}天 · ${item.focus}`;
       document.getElementById("detailRoute").textContent = item.routeSummary;
       document.getElementById("detailDesc").textContent = item.parentReminder;
@@ -665,11 +698,7 @@
 
       if (animationFrame) cancelAnimationFrame(animationFrame);
       map.getSource("active-route").setData(collection());
-      map.fitBounds(boundsForCoords(coords), {
-        padding: responsivePadding(),
-        maxZoom: modeKey(item) === "flight" || modeKey(item) === "return" ? 5.4 : 8.8,
-        duration: 650
-      });
+      moveMapToDay(item, coords);
       animateRoute(item, coords);
     }
 
@@ -686,26 +715,25 @@
       animationFrame = requestAnimationFrame(tick);
     }
 
-    function stopPlayback() {
-      if (playTimer) clearInterval(playTimer);
-      playTimer = null;
-      document.getElementById("playButton").textContent = "播放";
+    function moveMapToDay(item, coords) {
+      map.easeTo({
+        center: centerOfCoords(coords),
+        zoom: fixedZoom(modeKey(item) === "flight" || modeKey(item) === "return"),
+        duration: 650,
+        essential: true
+      });
     }
 
-    function playRoute() {
-      if (playTimer) {
-        stopPlayback();
-        return;
-      }
-      document.getElementById("playButton").textContent = "暂停";
-      selectDay(0);
-      playTimer = setInterval(() => {
-        if (activeIndex >= tripData.days.length - 1) {
-          stopPlayback();
-          return;
-        }
-        selectDay(activeIndex + 1);
-      }, 2300);
+    function centerOfCoords(coords) {
+      return [
+        coords.reduce((sum, coord) => sum + coord[0], 0) / coords.length,
+        coords.reduce((sum, coord) => sum + coord[1], 0) / coords.length
+      ];
+    }
+
+    function fixedZoom(flightDay) {
+      if (flightDay) return window.innerWidth < 820 ? 3.05 : 3.65;
+      return window.innerWidth < 820 ? 5.55 : 5.95;
     }
 
     async function init() {
@@ -725,7 +753,6 @@
       });
     });
 
-    document.getElementById("playButton").addEventListener("click", playRoute);
     document.getElementById("detailButton").addEventListener("click", () => {
       document.getElementById("detailSheet").classList.toggle("open");
     });
