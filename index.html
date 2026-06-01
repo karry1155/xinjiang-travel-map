@@ -329,6 +329,8 @@
     }
 
     .overview-list-item.overnight .days { background: var(--gold); }
+    .overview-list-item.wish .days { background: #7c3aed; }
+    .overview-list-item.included .days { background: var(--teal); }
 
     .overview-list-item b {
       font-size: 13px;
@@ -518,6 +520,8 @@
     }
 
     .overview-marker.overnight { background: var(--gold); }
+    .overview-marker.wish { background: #7c3aed; }
+    .overview-marker.included { background: var(--teal); }
 
     .overview-marker span {
       display: grid;
@@ -648,6 +652,22 @@
       }]
     };
 
+    const popularDestinations = [
+      { label: "赛里木湖", badge: "已", status: "included", coord: [81.1625, 44.6094] },
+      { label: "喀纳斯", badge: "想", status: "wish", coord: [87.0336, 48.8170] },
+      { label: "那拉提", badge: "已", status: "included", coord: [83.2585, 43.2332] },
+      { label: "夏塔古道", badge: "想", status: "wish", coord: [80.7934, 42.7416] },
+      { label: "禾木", badge: "想", status: "wish", coord: [87.4304, 48.5692] },
+      { label: "喀拉峻", badge: "想", status: "wish", coord: [82.1351, 43.0916] },
+      { label: "独库公路", badge: "想", status: "wish", coord: [84.8807, 44.3139] },
+      { label: "唐布拉", badge: "想", status: "wish", coord: [84.2031, 43.7177] },
+      { label: "琼库什台", badge: "想", status: "wish", coord: [82.1884, 42.9246] },
+      { label: "巴音布鲁克", badge: "想", status: "wish", coord: [84.1510, 43.0320] },
+      { label: "五彩滩", badge: "想", status: "wish", coord: [86.6717, 47.8391] },
+      { label: "可可托海", badge: "想", status: "wish", coord: [89.8750, 47.2050] },
+      { label: "天山天池", badge: "已", status: "included", coord: [88.0650, 44.1006] }
+    ];
+
     const map = new maplibregl.Map({
       container: "map",
       style: openStreetMapStyle,
@@ -740,7 +760,7 @@
       clearActiveMarkers();
       items.forEach((item) => {
         const pin = document.createElement("div");
-        pin.className = `overview-marker ${item.kind === "overnight" ? "overnight" : ""}`;
+        pin.className = `overview-marker ${item.kind === "overnight" ? "overnight" : ""} ${item.status || ""}`;
         pin.innerHTML = `<span>${item.dayLabel}</span><b>${item.label}</b>`;
         pin.title = `${item.dayLabel} ${item.label}`;
         addTrackedMarker(item.key, pin, item.coord);
@@ -786,13 +806,14 @@
       });
       [
         { label: "打卡", kind: "scenic" },
-        { label: "落脚", kind: "overnight" }
+        { label: "落脚", kind: "overnight" },
+        { label: "更多", kind: "more" }
       ].forEach((entry) => {
         const overviewButton = document.createElement("button");
         overviewButton.className = `day-button overview ${entry.kind}`;
         overviewButton.type = "button";
         overviewButton.innerHTML = `<b>${entry.label}</b>`;
-        overviewButton.addEventListener("click", () => showOverview(entry.kind));
+        overviewButton.addEventListener("click", () => entry.kind === "more" ? showMore() : showOverview(entry.kind));
         rail.appendChild(overviewButton);
         dayButtons.push(overviewButton);
       });
@@ -845,7 +866,7 @@
           <span class="caption-num">${item.dayLabel}</span>
           <span class="caption-text">
             <b>${item.label}</b>
-            <span>${item.kind === "overnight" ? "落脚" : "打卡"}</span>
+            <span>${overviewItemTypeLabel(item)}</span>
           </span>
         </button>
       `).join("");
@@ -899,13 +920,13 @@
     function showOverview(kind) {
       if (!mapReady) return;
       if (overviewMode && overviewKindActive === kind) {
-        overviewListOpen = !overviewListOpen;
-        document.getElementById("overviewList").classList.toggle("open", overviewListOpen);
+        clearFocusedMarker();
+        fitMapToCoords(overviewItems(kind).map((item) => item.coord), 7.2);
         return;
       }
       overviewMode = true;
       overviewKindActive = kind;
-      overviewListOpen = true;
+      overviewListOpen = false;
       setDetailOpen(false);
       const items = overviewItems(kind);
 
@@ -916,7 +937,7 @@
       document.getElementById("routeLine").textContent = "";
       document.getElementById("stayLine").textContent = "";
       renderOverviewCaption(items);
-      renderOverviewList(items);
+      renderOverviewList([]);
       addOverviewMarkers(items);
       const activeButtonIndex = kind === "scenic" ? tripData.days.length : tripData.days.length + 1;
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === activeButtonIndex));
@@ -925,19 +946,55 @@
       fitMapToCoords(items.map((item) => item.coord), 7.2);
     }
 
+    function showMore() {
+      if (!mapReady) return;
+      if (overviewMode && overviewKindActive === "more") {
+        overviewListOpen = !overviewListOpen;
+        document.getElementById("overviewList").classList.toggle("open", overviewListOpen);
+        if (!overviewListOpen) restoreCurrentMapView();
+        return;
+      }
+      overviewMode = true;
+      overviewKindActive = "more";
+      overviewListOpen = true;
+      setDetailOpen(false);
+      const items = moreItems();
+
+      document.getElementById("dayChip").textContent = "更多";
+      document.getElementById("modePill").textContent = "下次念想";
+      document.getElementById("dayTitle").textContent = "新疆热门目的地";
+      document.getElementById("detailButton").style.display = "none";
+      document.getElementById("routeLine").textContent = "";
+      document.getElementById("stayLine").textContent = "";
+      document.getElementById("routeCaption").innerHTML = "";
+      renderOverviewList(items);
+      addOverviewMarkers(items);
+      const activeButtonIndex = tripData.days.length + 2;
+      dayButtons.forEach((button, i) => button.classList.toggle("active", i === activeButtonIndex));
+      dayButtons[activeButtonIndex]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      map.getSource("active-route").setData(collection());
+      fitMapToCoords(items.map((item) => item.coord), 5.7);
+    }
+
     function renderOverviewList(items) {
       const list = document.getElementById("overviewList");
       list.innerHTML = items.map((item) => `
-        <button class="overview-list-item ${item.kind === "overnight" ? "overnight" : ""}" type="button" data-marker-key="${item.key}">
+        <button class="overview-list-item ${item.kind === "overnight" ? "overnight" : ""} ${item.status || ""}" type="button" data-marker-key="${item.key}">
           <span class="days">${item.dayLabel}</span>
           <b>${item.label}</b>
-          <span>${item.kind === "overnight" ? "落脚" : "打卡"}</span>
+          <span>${overviewItemTypeLabel(item)}</span>
         </button>
       `).join("");
       list.classList.toggle("open", overviewListOpen && items.length > 0);
       list.querySelectorAll(".overview-list-item").forEach((button) => {
         button.addEventListener("click", () => focusMarker(button.dataset.markerKey));
       });
+    }
+
+    function overviewItemTypeLabel(item) {
+      if (item.kind === "overnight") return "落脚";
+      if (item.kind === "more") return item.status === "included" ? "本次已含" : "下次";
+      return "打卡";
     }
 
     function bindCaptionInteractions() {
@@ -976,7 +1033,8 @@
 
     function restoreCurrentMapView() {
       if (overviewMode) {
-        fitMapToCoords(overviewItems(overviewKindActive).map((item) => item.coord), 7.2);
+        const items = overviewKindActive === "more" ? moreItems() : overviewItems(overviewKindActive);
+        fitMapToCoords(items.map((item) => item.coord), overviewKindActive === "more" ? 5.7 : 7.2);
         return;
       }
       const item = tripData.days[activeIndex];
@@ -1042,6 +1100,15 @@
         ...item,
         dayLabel: item.days.map((day) => `D${day}`).join("/"),
         key: [item.kind, item.label, item.coord.map((value) => value.toFixed(4)).join(",")].join("|")
+      }));
+    }
+
+    function moreItems() {
+      return popularDestinations.map((item) => ({
+        ...item,
+        kind: "more",
+        dayLabel: item.badge,
+        key: ["more", item.label, item.coord.map((value) => value.toFixed(4)).join(",")].join("|")
       }));
     }
 
