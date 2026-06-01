@@ -337,23 +337,6 @@
     .stop-marker.scenic { background: var(--teal); }
     .stop-marker.transfer { background: #7c3aed; }
 
-    .stop-marker.offset-left::after,
-    .stop-marker.offset-right::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: 30px;
-      border-top: 2px dashed rgba(23, 33, 43, 0.46);
-    }
-
-    .stop-marker.offset-left::after {
-      left: 100%;
-    }
-
-    .stop-marker.offset-right::after {
-      right: 100%;
-    }
-
     .stop-label {
       position: relative;
       min-width: auto;
@@ -384,6 +367,16 @@
       height: 18px;
       border-left: 2px dashed rgba(23, 33, 43, 0.44);
       transform: translateX(-50%);
+    }
+
+    .stop-label.label-left::after {
+      left: auto;
+      right: 16px;
+    }
+
+    .stop-label.label-right::after {
+      left: 16px;
+      transform: none;
     }
 
     .stop-label span {
@@ -562,14 +555,14 @@
         id: "all-routes-line",
         type: "line",
         source: "all-routes",
-        paint: { "line-color": ["get", "color"], "line-width": 2, "line-opacity": 0.14 }
+        paint: { "line-color": ["get", "color"], "line-width": 2, "line-opacity": 0.1 }
       });
 
       map.addLayer({
         id: "active-route-glow",
         type: "line",
         source: "active-route",
-        paint: { "line-color": ["get", "color"], "line-width": 12, "line-opacity": 0.16, "line-blur": 3 }
+        paint: { "line-color": ["get", "color"], "line-width": 16, "line-opacity": 0.2, "line-blur": 4 }
       });
 
       map.addLayer({
@@ -577,7 +570,7 @@
         type: "line",
         source: "active-route",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": ["get", "color"], "line-width": 6, "line-opacity": 0.96 }
+        paint: { "line-color": ["get", "color"], "line-width": 8, "line-opacity": 0.98 }
       });
     }
 
@@ -590,46 +583,27 @@
       clearActiveMarkers();
       const renderedLabels = new Set();
       item.numberedStops.forEach((stop, index) => {
-        const offset = markerOffset(stop, index, item);
         const pin = document.createElement("div");
         const isFlight = stop.role.includes("乘机") || stop.role.includes("航班");
         const roleClass = stopClass(stop, index, item);
-        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${roleClass} ${offsetClass(stop)}`;
+        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${roleClass}`;
         pin.textContent = stop.order;
         pin.title = stop.name;
-        activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center", offset }).setLngLat(stop.coord).addTo(map));
+        activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(stop.coord).addTo(map));
 
         const label = document.createElement("div");
-        label.className = `stop-label visible ${roleClass}`;
+        label.className = `stop-label visible ${roleClass} ${labelDirectionClass(stop, index, item)}`;
         const labelText = stop.shortLabel || stop.name;
         if (!renderedLabels.has(labelText)) {
           renderedLabels.add(labelText);
           label.innerHTML = `<span>${stop.role}</span><b>${labelText}</b>`;
-          activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "bottom", offset: labelMarkerOffset(stop, index, item, offset) }).setLngLat(stop.coord).addTo(map));
+          activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "bottom", offset: labelMarkerOffset(stop, index, item) }).setLngLat(stop.coord).addTo(map));
         }
       });
     }
 
-    function markerOffset(stop, index, item) {
-      if (stop.placeKey === "kunshan") return [-36, 0];
-      if (stop.placeKey === "wuxi-airport") return [36, 0];
-      const sameCoordStops = item.numberedStops.filter((entry) => sameCoord(entry.coord, stop.coord));
-      if (sameCoordStops.length > 1) {
-        const duplicateIndex = sameCoordStops.findIndex((entry) => entry.placeKey === stop.placeKey);
-        const offsets = [[0, -18], [22, 0], [-22, 0], [0, 18], [26, 18], [-26, 18]];
-        return offsets[duplicateIndex] || [0, 0];
-      }
-      return [0, 0];
-    }
-
     function sameCoord(a, b) {
       return Math.abs(a[0] - b[0]) < 0.0001 && Math.abs(a[1] - b[1]) < 0.0001;
-    }
-
-    function offsetClass(stop) {
-      if (stop.placeKey === "kunshan") return "offset-left";
-      if (stop.placeKey === "wuxi-airport") return "offset-right";
-      return "";
     }
 
     function stopClass(stop, index, item) {
@@ -639,12 +613,22 @@
       return "scenic";
     }
 
-    function labelMarkerOffset(stop, index, item, pinOffset) {
-      if (stop.placeKey === "kunshan") return [-54, -28];
-      if (stop.placeKey === "wuxi-airport") return [54, -28];
+    function labelDirectionClass(stop, index, item) {
+      if (stop.placeKey === "kunshan") return "label-left";
+      if (stop.placeKey === "wuxi-airport") return "label-right";
+      if (index > 0 && index < item.numberedStops.length - 1) {
+        return index % 2 === 0 ? "label-left" : "label-right";
+      }
+      return "";
+    }
+
+    function labelMarkerOffset(stop, index, item) {
+      if (stop.placeKey === "kunshan") return [-58, -42];
+      if (stop.placeKey === "wuxi-airport") return [54, -78];
       const middleOffsets = [-62, 62, -42, 42, 0];
-      const x = pinOffset[0] + (index === 0 || index === item.numberedStops.length - 1 ? 0 : middleOffsets[index % middleOffsets.length]);
-      const y = pinOffset[1] - 28 - (index % 2) * 18;
+      const duplicateLift = item.numberedStops.filter((entry) => sameCoord(entry.coord, stop.coord)).length > 1 ? index * 10 : 0;
+      const x = index === 0 || index === item.numberedStops.length - 1 ? 0 : middleOffsets[index % middleOffsets.length];
+      const y = -28 - (index % 2) * 18 - duplicateLift;
       return [x, y];
     }
 
@@ -711,22 +695,13 @@
       setDetailOpen(false);
 
       if (animationFrame) cancelAnimationFrame(animationFrame);
-      map.getSource("active-route").setData(collection());
+      animationFrame = null;
+      showRoute(item, coords);
       moveMapToDay(item, coords);
-      animateRoute(item, coords);
     }
 
-    function animateRoute(item, coords) {
-      const duration = 1100;
-      const start = performance.now();
-      function tick(now) {
-        const progress = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const count = Math.max(2, Math.ceil(coords.length * eased));
-        map.getSource("active-route").setData(collection([routeFeature(item, coords.slice(0, count))]));
-        if (progress < 1) animationFrame = requestAnimationFrame(tick);
-      }
-      animationFrame = requestAnimationFrame(tick);
+    function showRoute(item, coords) {
+      map.getSource("active-route").setData(collection([routeFeature(item, coords)]));
     }
 
     function moveMapToDay(item, coords) {
@@ -736,6 +711,22 @@
         duration: 650,
         essential: true
       });
+    }
+
+    function fitMapToDay(item, coords) {
+      map.fitBounds(boundsForCoords(coords), {
+        padding: detailPadding(),
+        maxZoom: modeKey(item) === "flight" || modeKey(item) === "return" ? 5.25 : 8.4,
+        duration: 650,
+        essential: true
+      });
+    }
+
+    function detailPadding() {
+      const cardHeight = Math.ceil(document.querySelector(".top-card").getBoundingClientRect().height) + 22;
+      return window.innerWidth < 820
+        ? { top: cardHeight, right: 88, bottom: 300, left: 88 }
+        : { top: cardHeight, right: 90, bottom: 112, left: 430 };
     }
 
     function centerOfCoords(coords) {
@@ -771,6 +762,13 @@
       document.querySelector(".top-card").classList.toggle("expanded", open);
       document.getElementById("detailSheet").classList.toggle("open", open);
       document.getElementById("detailButton").textContent = open ? "关闭详情" : "查看详情";
+      if (!mapReady || !tripData) return;
+      const item = tripData.days[activeIndex];
+      const coords = coordinates(item);
+      requestAnimationFrame(() => {
+        if (open) fitMapToDay(item, coords);
+        else moveMapToDay(item, coords);
+      });
     }
 
     document.getElementById("detailButton").addEventListener("click", () => {
