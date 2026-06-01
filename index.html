@@ -263,6 +263,70 @@
       scroll-snap-type: x mandatory;
     }
 
+    .route-caption {
+      position: absolute;
+      right: 12px;
+      bottom: calc(86px + env(safe-area-inset-bottom));
+      left: 12px;
+      z-index: 5;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0;
+      scrollbar-width: none;
+    }
+
+    .route-caption::-webkit-scrollbar { display: none; }
+
+    .caption-stop {
+      display: grid;
+      grid-template-columns: 24px auto;
+      column-gap: 8px;
+      align-items: center;
+      min-width: max-content;
+      padding: 7px 10px 7px 7px;
+      border: 1px solid rgba(27, 42, 55, 0.12);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 8px 22px rgba(17, 30, 42, 0.12);
+      backdrop-filter: blur(14px);
+    }
+
+    .caption-num {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 860;
+    }
+
+    .caption-stop.start .caption-num { background: #1d4ed8; }
+    .caption-stop.end .caption-num { background: var(--gold); }
+    .caption-stop.transfer .caption-num { background: #7c3aed; }
+
+    .caption-text {
+      display: grid;
+      gap: 1px;
+    }
+
+    .caption-text b {
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.15;
+      font-weight: 820;
+    }
+
+    .caption-text span {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.1;
+      font-weight: 720;
+    }
+
     .day-button {
       min-width: 74px;
       min-height: 54px;
@@ -350,6 +414,12 @@
         border: 1px solid rgba(27, 42, 55, 0.12);
         border-radius: 8px;
       }
+
+      .route-caption {
+        right: 28px;
+        bottom: 110px;
+        left: 28px;
+      }
     }
   </style>
 </head>
@@ -384,6 +454,7 @@
     </section>
 
     <nav class="day-rail" id="dayRail" aria-label="选择行程天数"></nav>
+    <div class="route-caption" id="routeCaption" aria-label="当天路线索引"></div>
   </main>
 
   <script>
@@ -530,10 +601,6 @@
       });
     }
 
-    function shortTitle(item) {
-      return item.focus.replace("，", "、").split("、")[0].slice(0, 5);
-    }
-
     function routeText(item) {
       return item.numberedStops.map((stop) => stop.shortLabel || stop.name).join(" → ");
     }
@@ -555,16 +622,35 @@
         item.estimatedDriving,
         ...item.mainStops
       ].map((tag) => `<span class="chip">${tag}</span>`).join("");
+      renderRouteCaption(item);
+    }
+
+    function renderRouteCaption(item) {
+      document.getElementById("routeCaption").innerHTML = item.numberedStops.map((stop, index) => {
+        const roleClass = stopClass(stop, index, item);
+        return `
+          <div class="caption-stop ${roleClass}">
+            <span class="caption-num">${stop.order}</span>
+            <span class="caption-text">
+              <b>${stop.shortLabel || stop.name}</b>
+              <span>${captionRole(stop, index, item)}</span>
+            </span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function captionRole(stop, index, item) {
+      if (index === 0) return "出发";
+      if (index === item.numberedStops.length - 1) return item.day === 8 ? "回家" : "落脚";
+      if (stop.role.includes("晚餐")) return "晚餐";
+      if (stop.role.includes("乘机") || stop.role.includes("航班")) return "航班";
+      if (stop.role.includes("参观")) return "参观";
+      return "游玩";
     }
 
     function boundsForCoords(coords) {
       return coords.reduce((bounds, coord) => bounds.extend(coord), new maplibregl.LngLatBounds(coords[0], coords[0]));
-    }
-
-    function responsivePadding() {
-      return window.innerWidth < 820
-        ? { top: 168, right: 42, bottom: 112, left: 42 }
-        : { top: 168, right: 90, bottom: 112, left: 430 };
     }
 
     function selectDay(index) {
@@ -590,40 +676,23 @@
     }
 
     function moveMapToDay(item, coords) {
-      map.easeTo({
-        center: centerOfCoords(coords),
-        zoom: fixedZoom(modeKey(item) === "flight" || modeKey(item) === "return"),
-        duration: 650,
-        essential: true
-      });
+      fitMapToDay(item, coords);
     }
 
     function fitMapToDay(item, coords) {
       map.fitBounds(boundsForCoords(coords), {
-        padding: detailPadding(),
+        padding: mapPadding(),
         maxZoom: modeKey(item) === "flight" || modeKey(item) === "return" ? 5.25 : 8.4,
         duration: 650,
         essential: true
       });
     }
 
-    function detailPadding() {
+    function mapPadding() {
       const cardHeight = Math.ceil(document.querySelector(".top-card").getBoundingClientRect().height) + 22;
       return window.innerWidth < 820
-        ? { top: cardHeight, right: 88, bottom: 300, left: 88 }
+        ? { top: cardHeight, right: 34, bottom: 156, left: 34 }
         : { top: cardHeight, right: 90, bottom: 112, left: 430 };
-    }
-
-    function centerOfCoords(coords) {
-      return [
-        coords.reduce((sum, coord) => sum + coord[0], 0) / coords.length,
-        coords.reduce((sum, coord) => sum + coord[1], 0) / coords.length
-      ];
-    }
-
-    function fixedZoom(flightDay) {
-      if (flightDay) return window.innerWidth < 820 ? 3.05 : 3.65;
-      return window.innerWidth < 820 ? 5.55 : 5.95;
     }
 
     async function init() {
@@ -651,8 +720,7 @@
       const item = tripData.days[activeIndex];
       const coords = coordinates(item);
       requestAnimationFrame(() => {
-        if (open) fitMapToDay(item, coords);
-        else moveMapToDay(item, coords);
+        fitMapToDay(item, coords);
       });
     }
 
