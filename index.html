@@ -179,7 +179,7 @@
     .detail-sheet.open { display: block; }
 
     .sheet-head {
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: flex-start;
       gap: 12px;
@@ -346,6 +346,12 @@
       box-shadow: inset 0 -3px 0 var(--teal);
     }
 
+    .day-button.overview.active {
+      border-color: rgba(164, 90, 19, 0.42);
+      background: #fff7ed;
+      box-shadow: inset 0 -3px 0 var(--gold);
+    }
+
     .day-button b {
       display: block;
       color: var(--teal);
@@ -397,6 +403,51 @@
     .stop-marker.end { background: var(--gold); }
     .stop-marker.scenic { background: var(--teal); }
     .stop-marker.transfer { background: #7c3aed; }
+
+    .overview-marker {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: 6px;
+      align-items: center;
+      padding: 5px 8px 5px 5px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: var(--teal);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(17, 30, 42, 0.22);
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    .overview-marker.overnight { background: var(--gold); }
+
+    .overview-marker span {
+      display: grid;
+      place-items: center;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 11px;
+    }
+
+    .overview-marker b {
+      font-size: 12px;
+      line-height: 1.1;
+    }
+
+    .distance-label {
+      padding: 4px 7px;
+      border: 1px solid rgba(27, 42, 55, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      box-shadow: 0 6px 14px rgba(17, 30, 42, 0.14);
+      font-size: 11px;
+      font-weight: 820;
+      white-space: nowrap;
+      pointer-events: none;
+    }
 
     @media (min-width: 820px) {
       .top-card {
@@ -460,6 +511,7 @@
     let tripData = null;
     let activeMarkers = [];
     let activeIndex = 0;
+    let overviewMode = false;
     let mapReady = false;
     let animationFrame = null;
 
@@ -520,6 +572,14 @@
       };
     }
 
+    function distanceFeature(day, fromStop, toStop) {
+      return {
+        type: "Feature",
+        properties: { day: day.day, mode: "distance", color: "rgba(15,118,110,0.42)" },
+        geometry: { type: "LineString", coordinates: [fromStop.coord, toStop.coord] }
+      };
+    }
+
     function collection(features = []) {
       return { type: "FeatureCollection", features };
     }
@@ -569,6 +629,26 @@
       });
     }
 
+    function addOverviewMarkers(items) {
+      clearActiveMarkers();
+      items.forEach((item) => {
+        const pin = document.createElement("div");
+        pin.className = `overview-marker ${item.kind === "overnight" ? "overnight" : ""}`;
+        pin.innerHTML = `<span>D${item.day}</span><b>${item.label}</b>`;
+        pin.title = `D${item.day} ${item.label}`;
+        activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(item.coord).addTo(map));
+      });
+    }
+
+    function addDistanceLabels(items) {
+      items.filter((item) => item.kind === "scenic").forEach((item) => {
+        const label = document.createElement("div");
+        label.className = "distance-label";
+        label.textContent = `约${Math.round(item.distanceKm)}km`;
+        activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "center" }).setLngLat(midpoint(item.from.coord, item.coord)).addTo(map));
+      });
+    }
+
     function stopClass(stop, index, item) {
       if (index === 0) return "start";
       if (index === item.numberedStops.length - 1) return "end";
@@ -583,10 +663,17 @@
         button.className = "day-button";
         button.type = "button";
         button.innerHTML = `<b>D${item.day}</b>`;
-        button.addEventListener("click", () => selectDay(index));
+        button.addEventListener("click", () => handleDayButton(index));
         rail.appendChild(button);
         dayButtons.push(button);
       });
+      const overviewButton = document.createElement("button");
+      overviewButton.className = "day-button overview";
+      overviewButton.type = "button";
+      overviewButton.innerHTML = "<b>全部</b>";
+      overviewButton.addEventListener("click", showOverview);
+      rail.appendChild(overviewButton);
+      dayButtons.push(overviewButton);
     }
 
     function routeText(item) {
@@ -594,6 +681,7 @@
     }
 
     function updateText(item) {
+      document.getElementById("detailButton").style.display = "";
       document.getElementById("dayChip").textContent = `第${item.day}天`;
       document.getElementById("modePill").textContent = item.transportMode;
       document.getElementById("dayTitle").textContent = item.focus;
@@ -628,6 +716,18 @@
       }).join("");
     }
 
+    function renderOverviewCaption(items) {
+      document.getElementById("routeCaption").innerHTML = items.map((item) => `
+        <div class="caption-stop ${item.kind === "overnight" ? "end" : "scenic"}">
+          <span class="caption-num">D${item.day}</span>
+          <span class="caption-text">
+            <b>${item.label}</b>
+            <span>${item.kind === "overnight" ? "落脚" : `打卡 · 约${Math.round(item.distanceKm)}km`}</span>
+          </span>
+        </div>
+      `).join("");
+    }
+
     function captionRole(stop, index, item) {
       if (index === 0) return "出发";
       if (index === item.numberedStops.length - 1) return item.day === 8 ? "回家" : "落脚";
@@ -643,6 +743,7 @@
 
     function selectDay(index) {
       if (!mapReady) return;
+      overviewMode = false;
       activeIndex = index;
       const item = tripData.days[index];
       const coords = coordinates(item);
@@ -659,6 +760,40 @@
       moveMapToDay(item, coords);
     }
 
+    function handleDayButton(index) {
+      if (!mapReady) return;
+      if (!overviewMode && activeIndex === index) {
+        setDetailOpen(!document.getElementById("detailSheet").classList.contains("open"));
+        return;
+      }
+      selectDay(index);
+    }
+
+    function showOverview() {
+      if (!mapReady) return;
+      overviewMode = true;
+      setDetailOpen(false);
+      const items = overviewItems();
+      const lines = tripData.days.flatMap((day) => {
+        const from = day.numberedStops[0];
+        return overviewItemsForDay(day).filter((item) => item.kind === "scenic").map((item) => distanceFeature(day, from, item));
+      });
+
+      document.getElementById("dayChip").textContent = "全部";
+      document.getElementById("modePill").textContent = "打卡+落脚";
+      document.getElementById("dayTitle").textContent = "全程点位";
+      document.getElementById("detailButton").style.display = "none";
+      document.getElementById("routeLine").textContent = "";
+      document.getElementById("stayLine").textContent = "";
+      renderOverviewCaption(items);
+      addOverviewMarkers(items);
+      addDistanceLabels(items);
+      dayButtons.forEach((button, i) => button.classList.toggle("active", i === tripData.days.length));
+      dayButtons[tripData.days.length]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      map.getSource("active-route").setData(collection(lines));
+      fitMapToCoords([...overviewStartCoords(), ...items.map((item) => item.coord)], 7.2);
+    }
+
     function showRoute(item, coords) {
       map.getSource("active-route").setData(collection([routeFeature(item, coords)]));
     }
@@ -673,9 +808,13 @@
     }
 
     function fitMapToDay(item, coords) {
+      fitMapToCoords(coords, modeKey(item) === "flight" || modeKey(item) === "return" ? 5.25 : 8.4);
+    }
+
+    function fitMapToCoords(coords, maxZoom = 8.4) {
       map.fitBounds(boundsForCoords(coords), {
         padding: mapPadding(),
-        maxZoom: modeKey(item) === "flight" || modeKey(item) === "return" ? 5.25 : 8.4,
+        maxZoom,
         duration: 650,
         essential: true
       });
@@ -700,6 +839,52 @@
       return window.innerWidth < 820 ? 5.55 : 5.95;
     }
 
+    function overviewItems() {
+      return tripData.days.flatMap((day) => overviewItemsForDay(day));
+    }
+
+    function overviewItemsForDay(day) {
+      const start = day.numberedStops[0];
+      return day.numberedStops
+        .filter((stop, index) => index > 0 && overviewKind(stop, index, day))
+        .map((stop, index) => ({
+          day: day.day,
+          label: stop.shortLabel || stop.name,
+          coord: stop.coord,
+          from: start,
+          kind: overviewKind(stop, day.numberedStops.indexOf(stop), day),
+          distanceKm: distanceKm(start.coord, stop.coord)
+        }));
+    }
+
+    function overviewKind(stop, index, day) {
+      if (stop.role.includes("回家")) return "";
+      if (index === day.numberedStops.length - 1) return "overnight";
+      if (stop.role.includes("乘机") || stop.role.includes("航班")) return "";
+      if (index > 0) return "scenic";
+      return "";
+    }
+
+    function overviewStartCoords() {
+      return tripData.days
+        .filter((day) => overviewItemsForDay(day).some((item) => item.kind === "scenic"))
+        .map((day) => day.numberedStops[0].coord);
+    }
+
+    function distanceKm(a, b) {
+      const toRad = (value) => value * Math.PI / 180;
+      const [lng1, lat1] = a;
+      const [lng2, lat2] = b;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
+
+    function midpoint(a, b) {
+      return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    }
+
     async function init() {
       const response = await fetch("data/itinerary-structured.json");
       tripData = await response.json();
@@ -722,6 +907,7 @@
       document.getElementById("detailSheet").classList.toggle("open", open);
       document.getElementById("detailButton").textContent = open ? "关闭详情" : "查看详情";
       if (!mapReady || !tripData) return;
+      if (overviewMode) return;
       const item = tripData.days[activeIndex];
       const coords = coordinates(item);
       requestAnimationFrame(() => {
