@@ -32,9 +32,17 @@
         },
         {
           "order": 3,
+          "placeKey": "shihezi-huayuan-airport",
+          "name": "石河子花园机场",
+          "role": "航班抵达",
+          "coord": [85.8905, 44.2421],
+          "shortLabel": "石河子机场"
+        },
+        {
+          "order": 4,
           "placeKey": "shihezi",
           "name": "石河子",
-          "role": "抵达入住",
+          "role": "晚上落脚",
           "coord": [86.0804, 44.3059],
           "shortLabel": "石河子"
         }
@@ -86,7 +94,7 @@
           "placeKey": "yining-kokdala",
           "name": "伊宁/可克达拉",
           "role": "晚上落脚",
-          "coord": [81.0445, 43.9446],
+          "coord": [81.2748, 43.9052],
           "shortLabel": "伊宁"
         }
       ],
@@ -113,7 +121,7 @@
           "placeKey": "yining-kokdala",
           "name": "伊宁/可克达拉",
           "role": "早上出发",
-          "coord": [81.0445, 43.9446],
+          "coord": [81.2748, 43.9052],
           "shortLabel": "伊宁"
         },
         {
@@ -137,7 +145,7 @@
           "placeKey": "xinyuan-gongliu",
           "name": "新源/巩留",
           "role": "晚上落脚",
-          "coord": [83.2582, 43.4342],
+          "coord": [83.2277, 43.4326],
           "shortLabel": "新源"
         }
       ],
@@ -164,7 +172,7 @@
           "placeKey": "xinyuan-gongliu",
           "name": "新源/巩留",
           "role": "早上出发",
-          "coord": [83.2582, 43.4342],
+          "coord": [83.2277, 43.4326],
           "shortLabel": "新源"
         },
         {
@@ -188,7 +196,7 @@
           "placeKey": "bole-shuanghe-kuitun",
           "name": "博乐/双河/奎屯",
           "role": "晚上落脚",
-          "coord": [82.9869, 44.4271],
+          "coord": [84.9020, 44.4260],
           "shortLabel": "奎屯"
         }
       ],
@@ -215,7 +223,7 @@
           "placeKey": "bole-shuanghe-kuitun",
           "name": "博乐/双河/奎屯",
           "role": "早上出发",
-          "coord": [82.9869, 44.4271],
+          "coord": [84.9020, 44.4260],
           "shortLabel": "奎屯"
         },
         {
@@ -279,19 +287,11 @@
         },
         {
           "order": 4,
-          "placeKey": "wine-dinner",
-          "name": "红酒晚宴",
-          "role": "晚餐体验",
-          "coord": [87.6168, 43.8256],
-          "shortLabel": "晚宴"
-        },
-        {
-          "order": 5,
           "placeKey": "urumqi-changji-overnight",
-          "name": "乌鲁木齐/昌吉",
-          "role": "晚上落脚",
+          "name": "红酒晚宴/乌鲁木齐",
+          "role": "晚餐与夜宿",
           "coord": [87.6168, 43.8256],
-          "shortLabel": "乌鲁木齐"
+          "shortLabel": "晚宴/夜宿"
         }
       ],
       "mainStops": ["和田玉展览馆", "天山天池", "红酒晚宴"],
@@ -381,6 +381,14 @@
         },
         {
           "order": 2,
+          "placeKey": "shihezi-huayuan-airport",
+          "name": "石河子花园机场",
+          "role": "乘机出发",
+          "coord": [85.8905, 44.2421],
+          "shortLabel": "石河子机场"
+        },
+        {
+          "order": 3,
           "placeKey": "wuxi-airport",
           "name": "无锡硕放机场",
           "role": "航班抵达",
@@ -388,7 +396,7 @@
           "shortLabel": "无锡"
         },
         {
-          "order": 3,
+          "order": 4,
           "placeKey": "kunshan",
           "name": "昆山/家",
           "role": "回家",

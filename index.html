@@ -511,16 +511,7 @@
     }
 
     function coordinates(item) {
-      const raw = stopCoords(item);
-      if (raw.length < 2) return raw;
-      return raw.flatMap((point, index) => index === 0 ? [point] : straightLine(raw[index - 1], point, 24).slice(1));
-    }
-
-    function straightLine(a, b, steps) {
-      return Array.from({ length: steps + 1 }, (_, i) => {
-        const t = i / steps;
-        return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-      });
+      return stopCoords(item);
     }
 
     function routeFeature(item, visibleCoords = null) {
@@ -559,7 +550,7 @@
         type: "line",
         source: "active-route",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": ["get", "color"], "line-width": 8, "line-opacity": 0.98 }
+        paint: { "line-color": ["get", "color"], "line-width": 7, "line-opacity": 0.98 }
       });
     }
 
