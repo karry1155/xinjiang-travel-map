@@ -295,7 +295,105 @@
       backdrop-filter: blur(16px);
     }
 
-    .overview-list.open { display: grid; gap: 7px; }
+    .overview-list.open { display: grid; gap: 9px; }
+
+    .overview-list.more-panel {
+      max-height: min(48vh, 430px);
+      padding: 10px;
+    }
+
+    .region-card {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid rgba(27, 42, 55, 0.12);
+      border-left: 5px solid var(--teal);
+      border-radius: 8px;
+      background: rgba(248, 251, 252, 0.9);
+    }
+
+    .region-card.altay { border-left-color: #2563eb; }
+    .region-card.ili { border-left-color: #059669; }
+    .region-card.north-slope { border-left-color: #0891b2; }
+    .region-card.south { border-left-color: #b45309; }
+    .region-card.east { border-left-color: #7c3aed; }
+
+    .region-card header {
+      display: grid;
+      gap: 3px;
+    }
+
+    .region-card strong {
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .region-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      line-height: 1.45;
+    }
+
+    .region-spots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 7px;
+    }
+
+    .region-spot {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 5px;
+      align-items: start;
+      min-height: 54px;
+      padding: 7px;
+      border: 1px solid rgba(27, 42, 55, 0.1);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 820;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .region-spot .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      font-size: 10px;
+      line-height: 22px;
+      text-align: center;
+    }
+
+    .region-card.altay .dot { background: #2563eb; }
+    .region-card.ili .dot { background: #059669; }
+    .region-card.north-slope .dot { background: #0891b2; }
+    .region-card.south .dot { background: #b45309; }
+    .region-card.east .dot { background: #7c3aed; }
+
+    .region-spot .spot-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .region-spot .spot-name {
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+    .region-spot .spot-desc {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 680;
+      line-height: 1.3;
+    }
 
     .overview-list-item {
       display: grid;
@@ -522,6 +620,11 @@
     .overview-marker.overnight { background: var(--gold); }
     .overview-marker.wish { background: #7c3aed; }
     .overview-marker.included { background: var(--teal); }
+    .overview-marker.altay { background: #2563eb; }
+    .overview-marker.ili { background: #059669; }
+    .overview-marker.north-slope { background: #0891b2; }
+    .overview-marker.south { background: #b45309; }
+    .overview-marker.east { background: #7c3aed; }
 
     .overview-marker span {
       display: grid;
@@ -652,20 +755,68 @@
       }]
     };
 
-    const popularDestinations = [
-      { label: "赛里木湖", badge: "已", status: "included", coord: [81.1625, 44.6094] },
-      { label: "喀纳斯", badge: "想", status: "wish", coord: [87.0336, 48.8170] },
-      { label: "那拉提", badge: "已", status: "included", coord: [83.2585, 43.2332] },
-      { label: "夏塔古道", badge: "想", status: "wish", coord: [80.7934, 42.7416] },
-      { label: "禾木", badge: "想", status: "wish", coord: [87.4304, 48.5692] },
-      { label: "喀拉峻", badge: "想", status: "wish", coord: [82.1351, 43.0916] },
-      { label: "独库公路", badge: "想", status: "wish", coord: [84.8807, 44.3139] },
-      { label: "唐布拉", badge: "想", status: "wish", coord: [84.2031, 43.7177] },
-      { label: "琼库什台", badge: "想", status: "wish", coord: [82.1884, 42.9246] },
-      { label: "巴音布鲁克", badge: "想", status: "wish", coord: [84.1510, 43.0320] },
-      { label: "五彩滩", badge: "想", status: "wish", coord: [86.6717, 47.8391] },
-      { label: "可可托海", badge: "想", status: "wish", coord: [89.8750, 47.2050] },
-      { label: "天山天池", badge: "已", status: "included", coord: [88.0650, 44.1006] }
+    const regionModules = [
+      {
+        title: "北疆 · 阿勒泰",
+        className: "altay",
+        badge: "阿",
+        intro: "雪山、森林、河谷和村落集中在这里，适合秋色、冬雪和边境风光主题。",
+        spots: [
+          { label: "喀纳斯", coord: [87.0336, 48.8170], desc: "湖泊、森林和图瓦村落，是阿勒泰最经典的目的地。" },
+          { label: "禾木", coord: [87.4304, 48.5692], desc: "木屋村落与晨雾很有辨识度，适合慢住和拍日出。" },
+          { label: "五彩滩", coord: [86.6717, 47.8391], desc: "雅丹彩丘与额尔齐斯河相邻，傍晚光线更出片。" },
+          { label: "可可托海", coord: [89.8750, 47.2050], desc: "峡谷、矿山与额尔齐斯河源头风景，距离较远但很有层次。" }
+        ]
+      },
+      {
+        title: "北疆 · 伊犁",
+        className: "ili",
+        badge: "伊",
+        intro: "草原、花海、雪山公路和峡谷组合密集，也是这次行程最核心的风景带。",
+        spots: [
+          { label: "赛里木湖", coord: [81.1625, 44.6094], desc: "高山湖泊，环湖视野开阔，这次行程已包含。" },
+          { label: "那拉提", coord: [83.2585, 43.2332], desc: "河谷草原与空中草原代表，这次行程已包含。" },
+          { label: "夏塔古道", coord: [80.7934, 42.7416], desc: "雪山、冰川和徒步气质更强，适合体力更充足时安排。" },
+          { label: "喀拉峻", coord: [82.1351, 43.0916], desc: "起伏草原和人体草原线条明显，适合草原深度游。" },
+          { label: "唐布拉", coord: [84.2031, 43.7177], desc: "百里画廊风格，适合把草原、公路和河谷串起来。" },
+          { label: "琼库什台", coord: [82.1884, 42.9246], desc: "村落、草坡和木屋更松弛，适合慢节奏停留。" },
+          { label: "巴音布鲁克", coord: [84.1510, 43.0320], desc: "九曲十八弯和天鹅湖出名，落日时间更值得等。" },
+          { label: "独库公路", coord: [84.8807, 44.3139], desc: "跨越天山的公路名片，受季节和路况影响很大。" }
+        ]
+      },
+      {
+        title: "北疆 · 天山北坡",
+        className: "north-slope",
+        badge: "天",
+        intro: "靠近乌鲁木齐，适合把城市补给、雪山湖泊和短途景区组合起来。",
+        spots: [
+          { label: "天山天池", coord: [88.0650, 44.1006], desc: "离乌鲁木齐较近的高山湖泊，这次行程已包含。" }
+        ]
+      },
+      {
+        title: "南疆",
+        className: "south",
+        badge: "南",
+        intro: "更偏人文、沙漠、峡谷和帕米尔高原，适合下一次做一条完全不同的线路。",
+        spots: [
+          { label: "喀什古城", coord: [75.9898, 39.4704], desc: "南疆人文核心，老城街巷、集市和夜市很集中。" },
+          { label: "塔什库尔干", coord: [75.2299, 37.7756], desc: "帕米尔高原门户，适合看雪山、湿地和边境风光。" },
+          { label: "白沙湖", coord: [75.1178, 38.3344], desc: "白沙山与湖面组合很强，常与喀喇昆仑公路同线。" },
+          { label: "和田", coord: [79.9222, 37.1143], desc: "玉石、夜市和沙漠边缘城市，适合体验南疆生活气息。" }
+        ]
+      },
+      {
+        title: "东疆",
+        className: "east",
+        badge: "东",
+        intro: "更干热、更荒漠，适合看吐鲁番盆地、古城遗址和沙漠景观。",
+        spots: [
+          { label: "吐鲁番", coord: [89.1895, 42.9513], desc: "东疆入口城市，葡萄沟、坎儿井和古城遗址都在周边。" },
+          { label: "火焰山", coord: [89.5304, 42.9163], desc: "地貌辨识度很高，夏季非常热，适合短停拍照。" },
+          { label: "库木塔格沙漠", coord: [90.2263, 42.8681], desc: "离城市近的沙漠景区，适合体验沙丘和日落。" },
+          { label: "哈密", coord: [93.5151, 42.8193], desc: "东疆门户，适合衔接大海道、魔鬼城等荒漠线路。" }
+        ]
+      }
     ];
 
     const map = new maplibregl.Map({
@@ -967,7 +1118,7 @@
       document.getElementById("routeLine").textContent = "";
       document.getElementById("stayLine").textContent = "";
       document.getElementById("routeCaption").innerHTML = "";
-      renderOverviewList(items);
+      renderMorePanel();
       addOverviewMarkers(items);
       const activeButtonIndex = tripData.days.length + 2;
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === activeButtonIndex));
@@ -976,8 +1127,37 @@
       fitMapToCoords(items.map((item) => item.coord), 5.7);
     }
 
+    function renderMorePanel() {
+      const list = document.getElementById("overviewList");
+      list.innerHTML = regionModules.map((group) => `
+        <section class="region-card ${group.className}">
+          <header>
+            <strong>${group.title}</strong>
+            <p>${group.intro}</p>
+          </header>
+          <div class="region-spots">
+            ${group.spots.map((spot) => `
+              <button class="region-spot" type="button" data-marker-key="${moreKey(spot, group)}" title="${spot.desc}">
+                <span class="dot">${group.badge}</span>
+                <span class="spot-copy">
+                  <span class="spot-name">${spot.label}</span>
+                  <span class="spot-desc">${spot.desc}</span>
+                </span>
+              </button>
+            `).join("")}
+          </div>
+        </section>
+      `).join("");
+      list.classList.add("more-panel");
+      list.classList.toggle("open", overviewListOpen);
+      list.querySelectorAll(".region-spot").forEach((button) => {
+        button.addEventListener("click", () => focusMarker(button.dataset.markerKey));
+      });
+    }
+
     function renderOverviewList(items) {
       const list = document.getElementById("overviewList");
+      list.classList.remove("more-panel");
       list.innerHTML = items.map((item) => `
         <button class="overview-list-item ${item.kind === "overnight" ? "overnight" : ""} ${item.status || ""}" type="button" data-marker-key="${item.key}">
           <span class="days">${item.dayLabel}</span>
@@ -1104,12 +1284,17 @@
     }
 
     function moreItems() {
-      return popularDestinations.map((item) => ({
-        ...item,
+      return regionModules.flatMap((group) => group.spots.map((spot) => ({
+        ...spot,
         kind: "more",
-        dayLabel: item.badge,
-        key: ["more", item.label, item.coord.map((value) => value.toFixed(4)).join(",")].join("|")
-      }));
+        dayLabel: group.badge,
+        status: group.className,
+        key: moreKey(spot, group)
+      })));
+    }
+
+    function moreKey(spot, group) {
+      return ["more", group.className, spot.label, spot.coord.map((value) => value.toFixed(4)).join(",")].join("|");
     }
 
     function overviewItemsForDay(day) {
