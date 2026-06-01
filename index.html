@@ -484,11 +484,6 @@
       visibility: visible;
     }
 
-    .stop-marker.bounce,
-    .overview-marker.bounce {
-      animation: marker-bounce 620ms cubic-bezier(0.2, 0.9, 0.2, 1.2);
-    }
-
     .stop-marker.flight { background: var(--flight); }
     .stop-marker.start { background: #1d4ed8; }
     .stop-marker.end { background: var(--gold); }
@@ -509,6 +504,17 @@
       font-weight: 820;
       white-space: nowrap;
       z-index: 5;
+    }
+
+    .stop-marker,
+    .overview-marker {
+      cursor: pointer;
+    }
+
+    .stop-marker.selected,
+    .overview-marker.selected {
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.92), 0 14px 28px rgba(17, 30, 42, 0.34);
+      filter: saturate(1.08);
     }
 
     .overview-marker.overnight { background: var(--gold); }
@@ -541,13 +547,6 @@
       pointer-events: none;
       opacity: 0.88;
       z-index: 1;
-    }
-
-    @keyframes marker-bounce {
-      0% { transform: translateY(0) scale(1); }
-      35% { transform: translateY(-18px) scale(1.16); }
-      70% { transform: translateY(3px) scale(0.96); }
-      100% { transform: translateY(0) scale(1); }
     }
 
     @media (min-width: 820px) {
@@ -623,6 +622,7 @@
     let overviewMode = false;
     let overviewKindActive = "";
     let overviewListOpen = false;
+    let focusedMarkerKey = "";
     let mapReady = false;
     let animationFrame = null;
 
@@ -719,6 +719,7 @@
       activeMarkers.forEach((marker) => marker.remove());
       activeMarkers = [];
       markerByKey = new Map();
+      focusedMarkerKey = "";
     }
 
     function addMarkersForDay(item) {
@@ -748,6 +749,7 @@
 
     function addTrackedMarker(key, element, coord) {
       const marker = new maplibregl.Marker({ element, anchor: "center" }).setLngLat(coord).addTo(map);
+      element.addEventListener("click", () => focusMarker(key));
       activeMarkers.push(marker);
       markerByKey.set(key, { marker, element, coord });
       return marker;
@@ -947,17 +949,38 @@
     function focusMarker(key) {
       const entry = markerByKey.get(key);
       if (!entry) return;
-      const element = entry.element;
-      element.style.zIndex = String(Date.now());
-      element.classList.remove("bounce");
-      void element.offsetWidth;
-      element.classList.add("bounce");
+      if (focusedMarkerKey === key) {
+        clearFocusedMarker();
+        restoreCurrentMapView();
+        return;
+      }
+      clearFocusedMarker();
+      focusedMarkerKey = key;
+      entry.element.classList.add("selected");
+      entry.element.style.zIndex = "30";
       map.easeTo({
         center: entry.coord,
+        zoom: Math.max(map.getZoom(), overviewMode ? 7.8 : 8.4),
         duration: 450,
         essential: true
       });
-      setTimeout(() => element.classList.remove("bounce"), 700);
+    }
+
+    function clearFocusedMarker() {
+      markerByKey.forEach(({ element }) => {
+        element.classList.remove("selected");
+        element.style.zIndex = "";
+      });
+      focusedMarkerKey = "";
+    }
+
+    function restoreCurrentMapView() {
+      if (overviewMode) {
+        fitMapToCoords(overviewItems(overviewKindActive).map((item) => item.coord), 7.2);
+        return;
+      }
+      const item = tripData.days[activeIndex];
+      moveMapToDay(item, coordinates(item));
     }
 
     function showRoute(item, coords) {
