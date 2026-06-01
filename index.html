@@ -376,6 +376,15 @@
 
     .maplibregl-ctrl-bottom-right { margin-bottom: 88px; }
 
+    .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-inner {
+      display: none !important;
+    }
+
+    .maplibregl-ctrl-attrib:hover .maplibregl-ctrl-attrib-inner,
+    .maplibregl-ctrl-attrib:focus-within .maplibregl-ctrl-attrib-inner {
+      display: block !important;
+    }
+
     .stop-marker {
       display: grid;
       place-items: center;
@@ -434,19 +443,6 @@
     .overview-marker b {
       font-size: 12px;
       line-height: 1.1;
-    }
-
-    .distance-label {
-      padding: 4px 7px;
-      border: 1px solid rgba(27, 42, 55, 0.12);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.92);
-      color: var(--ink);
-      box-shadow: 0 6px 14px rgba(17, 30, 42, 0.14);
-      font-size: 11px;
-      font-weight: 820;
-      white-space: nowrap;
-      pointer-events: none;
     }
 
     @media (min-width: 820px) {
@@ -543,10 +539,11 @@
       center: [86.8, 43.7],
       zoom: 5.2,
       pitch: 0,
-      attributionControl: true,
+      attributionControl: false,
       renderWorldCopies: false
     });
     window.tripMap = map;
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
 
     function modeKey(item) {
@@ -569,14 +566,6 @@
         type: "Feature",
         properties: { day: item.day, mode, color: colors[mode] },
         geometry: { type: "LineString", coordinates: visibleCoords || coordinates(item) }
-      };
-    }
-
-    function distanceFeature(day, fromStop, toStop) {
-      return {
-        type: "Feature",
-        properties: { day: day.day, mode: "distance", color: "rgba(15,118,110,0.42)" },
-        geometry: { type: "LineString", coordinates: [fromStop.coord, toStop.coord] }
       };
     }
 
@@ -634,18 +623,9 @@
       items.forEach((item) => {
         const pin = document.createElement("div");
         pin.className = `overview-marker ${item.kind === "overnight" ? "overnight" : ""}`;
-        pin.innerHTML = `<span>D${item.day}</span><b>${item.label}</b>`;
-        pin.title = `D${item.day} ${item.label}`;
+        pin.innerHTML = `<span>${item.dayLabel}</span><b>${item.label}</b>`;
+        pin.title = `${item.dayLabel} ${item.label}`;
         activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(item.coord).addTo(map));
-      });
-    }
-
-    function addDistanceLabels(items) {
-      items.filter((item) => item.kind === "scenic").forEach((item) => {
-        const label = document.createElement("div");
-        label.className = "distance-label";
-        label.textContent = `约${Math.round(item.distanceKm)}km`;
-        activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "center" }).setLngLat(midpoint(item.from.coord, item.coord)).addTo(map));
       });
     }
 
@@ -719,10 +699,10 @@
     function renderOverviewCaption(items) {
       document.getElementById("routeCaption").innerHTML = items.map((item) => `
         <div class="caption-stop ${item.kind === "overnight" ? "end" : "scenic"}">
-          <span class="caption-num">D${item.day}</span>
+          <span class="caption-num">${item.dayLabel}</span>
           <span class="caption-text">
             <b>${item.label}</b>
-            <span>${item.kind === "overnight" ? "落脚" : `打卡 · 约${Math.round(item.distanceKm)}km`}</span>
+            <span>${item.kind === "overnight" ? "落脚" : "打卡"}</span>
           </span>
         </div>
       `).join("");
@@ -730,11 +710,12 @@
 
     function captionRole(stop, index, item) {
       if (index === 0) return "出发";
-      if (index === item.numberedStops.length - 1) return item.day === 8 ? "回家" : "落脚";
-      if (stop.role.includes("晚餐")) return "晚餐";
-      if (stop.role.includes("乘机") || stop.role.includes("航班")) return "航班";
-      if (stop.role.includes("参观")) return "参观";
-      return "游玩";
+      const distanceText = ` · 直线约${Math.round(distanceKm(item.numberedStops[0].coord, stop.coord))}km`;
+      if (index === item.numberedStops.length - 1) return `${item.day === 8 ? "回家" : "落脚"}${distanceText}`;
+      if (stop.role.includes("晚餐")) return `晚餐${distanceText}`;
+      if (stop.role.includes("乘机") || stop.role.includes("航班")) return `航班${distanceText}`;
+      if (stop.role.includes("参观")) return `参观${distanceText}`;
+      return `游玩${distanceText}`;
     }
 
     function boundsForCoords(coords) {
@@ -774,10 +755,6 @@
       overviewMode = true;
       setDetailOpen(false);
       const items = overviewItems();
-      const lines = tripData.days.flatMap((day) => {
-        const from = day.numberedStops[0];
-        return overviewItemsForDay(day).filter((item) => item.kind === "scenic").map((item) => distanceFeature(day, from, item));
-      });
 
       document.getElementById("dayChip").textContent = "全部";
       document.getElementById("modePill").textContent = "打卡+落脚";
@@ -787,10 +764,9 @@
       document.getElementById("stayLine").textContent = "";
       renderOverviewCaption(items);
       addOverviewMarkers(items);
-      addDistanceLabels(items);
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === tripData.days.length));
       dayButtons[tripData.days.length]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-      map.getSource("active-route").setData(collection(lines));
+      map.getSource("active-route").setData(collection());
       fitMapToCoords([...overviewStartCoords(), ...items.map((item) => item.coord)], 7.2);
     }
 
@@ -840,7 +816,19 @@
     }
 
     function overviewItems() {
-      return tripData.days.flatMap((day) => overviewItemsForDay(day));
+      const grouped = new Map();
+      tripData.days.flatMap((day) => overviewItemsForDay(day)).forEach((item) => {
+        const key = [item.kind, item.label, item.coord.map((value) => value.toFixed(4)).join(",")].join("|");
+        if (!grouped.has(key)) {
+          grouped.set(key, { ...item, days: [item.day] });
+        } else {
+          grouped.get(key).days.push(item.day);
+        }
+      });
+      return [...grouped.values()].map((item) => ({
+        ...item,
+        dayLabel: item.days.map((day) => `D${day}`).join("/")
+      }));
     }
 
     function overviewItemsForDay(day) {
@@ -849,6 +837,7 @@
         .filter((stop, index) => index > 0 && overviewKind(stop, index, day))
         .map((stop, index) => ({
           day: day.day,
+          dayLabel: `D${day.day}`,
           label: stop.shortLabel || stop.name,
           coord: stop.coord,
           from: start,
@@ -879,10 +868,6 @@
       const dLng = toRad(lng2 - lng1);
       const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
       return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
-    }
-
-    function midpoint(a, b) {
-      return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     }
 
     async function init() {
