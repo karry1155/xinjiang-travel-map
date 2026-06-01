@@ -352,6 +352,12 @@
       box-shadow: inset 0 -3px 0 var(--gold);
     }
 
+    .day-button.overview.scenic.active {
+      border-color: rgba(15, 118, 110, 0.42);
+      background: #edf8f5;
+      box-shadow: inset 0 -3px 0 var(--teal);
+    }
+
     .day-button b {
       display: block;
       color: var(--teal);
@@ -443,6 +449,19 @@
     .overview-marker b {
       font-size: 12px;
       line-height: 1.1;
+    }
+
+    .distance-label {
+      padding: 4px 7px;
+      border: 1px solid rgba(27, 42, 55, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink);
+      box-shadow: 0 6px 14px rgba(17, 30, 42, 0.14);
+      font-size: 11px;
+      font-weight: 820;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     @media (min-width: 820px) {
@@ -616,6 +635,7 @@
         pin.title = `${stop.order}. ${stop.name} - ${stop.role}`;
         activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(stop.coord).addTo(map));
       });
+      addSegmentDistanceLabels(item);
     }
 
     function addOverviewMarkers(items) {
@@ -626,6 +646,17 @@
         pin.innerHTML = `<span>${item.dayLabel}</span><b>${item.label}</b>`;
         pin.title = `${item.dayLabel} ${item.label}`;
         activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(item.coord).addTo(map));
+      });
+    }
+
+    function addSegmentDistanceLabels(item) {
+      item.numberedStops.slice(1).forEach((stop, index) => {
+        const previous = item.numberedStops[index];
+        const label = document.createElement("div");
+        label.className = "distance-label";
+        label.textContent = `约${Math.round(distanceKm(previous.coord, stop.coord))}km`;
+        label.title = `${previous.shortLabel || previous.name} 到 ${stop.shortLabel || stop.name} 的直线距离`;
+        activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "center" }).setLngLat(midpoint(previous.coord, stop.coord)).addTo(map));
       });
     }
 
@@ -647,13 +678,18 @@
         rail.appendChild(button);
         dayButtons.push(button);
       });
-      const overviewButton = document.createElement("button");
-      overviewButton.className = "day-button overview";
-      overviewButton.type = "button";
-      overviewButton.innerHTML = "<b>全部</b>";
-      overviewButton.addEventListener("click", showOverview);
-      rail.appendChild(overviewButton);
-      dayButtons.push(overviewButton);
+      [
+        { label: "打卡", kind: "scenic" },
+        { label: "落脚", kind: "overnight" }
+      ].forEach((entry) => {
+        const overviewButton = document.createElement("button");
+        overviewButton.className = `day-button overview ${entry.kind}`;
+        overviewButton.type = "button";
+        overviewButton.innerHTML = `<b>${entry.label}</b>`;
+        overviewButton.addEventListener("click", () => showOverview(entry.kind));
+        rail.appendChild(overviewButton);
+        dayButtons.push(overviewButton);
+      });
     }
 
     function routeText(item) {
@@ -710,12 +746,11 @@
 
     function captionRole(stop, index, item) {
       if (index === 0) return "出发";
-      const distanceText = ` · 直线约${Math.round(distanceKm(item.numberedStops[0].coord, stop.coord))}km`;
-      if (index === item.numberedStops.length - 1) return `${item.day === 8 ? "回家" : "落脚"}${distanceText}`;
-      if (stop.role.includes("晚餐")) return `晚餐${distanceText}`;
-      if (stop.role.includes("乘机") || stop.role.includes("航班")) return `航班${distanceText}`;
-      if (stop.role.includes("参观")) return `参观${distanceText}`;
-      return `游玩${distanceText}`;
+      if (index === item.numberedStops.length - 1) return item.day === 8 ? "回家" : "落脚";
+      if (stop.role.includes("晚餐")) return "晚餐";
+      if (stop.role.includes("乘机") || stop.role.includes("航班")) return "航班";
+      if (stop.role.includes("参观")) return "参观";
+      return "游玩";
     }
 
     function boundsForCoords(coords) {
@@ -750,24 +785,25 @@
       selectDay(index);
     }
 
-    function showOverview() {
+    function showOverview(kind) {
       if (!mapReady) return;
       overviewMode = true;
       setDetailOpen(false);
-      const items = overviewItems();
+      const items = overviewItems(kind);
 
-      document.getElementById("dayChip").textContent = "全部";
-      document.getElementById("modePill").textContent = "打卡+落脚";
-      document.getElementById("dayTitle").textContent = "全程点位";
+      document.getElementById("dayChip").textContent = kind === "scenic" ? "打卡" : "落脚";
+      document.getElementById("modePill").textContent = kind === "scenic" ? "景点汇总" : "夜宿汇总";
+      document.getElementById("dayTitle").textContent = kind === "scenic" ? "全程打卡" : "全程落脚";
       document.getElementById("detailButton").style.display = "none";
       document.getElementById("routeLine").textContent = "";
       document.getElementById("stayLine").textContent = "";
       renderOverviewCaption(items);
       addOverviewMarkers(items);
-      dayButtons.forEach((button, i) => button.classList.toggle("active", i === tripData.days.length));
-      dayButtons[tripData.days.length]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      const activeButtonIndex = kind === "scenic" ? tripData.days.length : tripData.days.length + 1;
+      dayButtons.forEach((button, i) => button.classList.toggle("active", i === activeButtonIndex));
+      dayButtons[activeButtonIndex]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
       map.getSource("active-route").setData(collection());
-      fitMapToCoords([...overviewStartCoords(), ...items.map((item) => item.coord)], 7.2);
+      fitMapToCoords(items.map((item) => item.coord), 7.2);
     }
 
     function showRoute(item, coords) {
@@ -815,9 +851,9 @@
       return window.innerWidth < 820 ? 5.55 : 5.95;
     }
 
-    function overviewItems() {
+    function overviewItems(kind) {
       const grouped = new Map();
-      tripData.days.flatMap((day) => overviewItemsForDay(day)).forEach((item) => {
+      tripData.days.flatMap((day) => overviewItemsForDay(day).filter((item) => item.kind === kind)).forEach((item) => {
         const key = [item.kind, item.label, item.coord.map((value) => value.toFixed(4)).join(",")].join("|");
         if (!grouped.has(key)) {
           grouped.set(key, { ...item, days: [item.day] });
@@ -854,12 +890,6 @@
       return "";
     }
 
-    function overviewStartCoords() {
-      return tripData.days
-        .filter((day) => overviewItemsForDay(day).some((item) => item.kind === "scenic"))
-        .map((day) => day.numberedStops[0].coord);
-    }
-
     function distanceKm(a, b) {
       const toRad = (value) => value * Math.PI / 180;
       const [lng1, lat1] = a;
@@ -868,6 +898,10 @@
       const dLng = toRad(lng2 - lng1);
       const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
       return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
+
+    function midpoint(a, b) {
+      return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
     }
 
     async function init() {
