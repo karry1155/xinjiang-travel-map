@@ -1,0 +1,412 @@
+{
+  "tripTitle": "6月7日新疆伊犁8日游",
+  "dateRange": "6月7日-6月14日",
+  "notes": [
+    "坐标为前端地图展示用的近似位置，不作为导航定位。",
+    "Day 2 之后的 morningStart 如原文未明确写出，按上一晚落脚点合理推断。",
+    "estimatedDriving 为公开常识级别的粗略估计，用于帮助家人理解每天转场强度，不代表实时路况或旅行社实际安排。",
+    "夜宿文案统一使用“夜宿：xxx”；Day 8 使用“返程：回家”。"
+  ],
+  "days": [
+    {
+      "day": 1,
+      "dateLabel": "6月7日",
+      "title": "昆山-无锡-石河子",
+      "morningStart": "昆山",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "kunshan",
+          "name": "昆山",
+          "role": "早上出发",
+          "coord": [120.9807, 31.3856],
+          "shortLabel": "昆山"
+        },
+        {
+          "order": 2,
+          "placeKey": "wuxi-airport",
+          "name": "无锡硕放机场",
+          "role": "乘机出发",
+          "coord": [120.4294, 31.4944],
+          "shortLabel": "无锡"
+        },
+        {
+          "order": 3,
+          "placeKey": "shihezi",
+          "name": "石河子",
+          "role": "抵达入住",
+          "coord": [86.0804, 44.3059],
+          "shortLabel": "石河子"
+        }
+      ],
+      "mainStops": ["昆山", "无锡硕放机场", "石河子"],
+      "movementType": "航班抵达",
+      "estimatedDriving": "昆山到无锡机场约1-1.5小时车程；新疆落地后以接机入住为主",
+      "eveningBase": "石河子",
+      "overnightLabel": "夜宿：石河子",
+      "transportMode": "汽车+飞机",
+      "routeSummary": "早上从昆山出发前往无锡机场，乘飞机抵达石河子后入住休息，不建议再安排夜游。",
+      "focus": "赶路、入住、休息",
+      "parentReminder": "身份证、手机、登机牌/行程单随身放，不要放托运行李。",
+      "weatherNote": "当天以跨区域飞行为主，落地后注意补水和休息。",
+      "safetyNote": "机场和酒店转场时看好随身包，抵达后少活动，避免疲劳。"
+    },
+    {
+      "day": 2,
+      "dateLabel": "6月8日",
+      "title": "赛里木湖-果子沟大桥-伊宁/可克达拉",
+      "morningStart": "石河子",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "shihezi",
+          "name": "石河子",
+          "role": "早上出发",
+          "coord": [86.0804, 44.3059],
+          "shortLabel": "石河子"
+        },
+        {
+          "order": 2,
+          "placeKey": "sayram-lake",
+          "name": "赛里木湖",
+          "role": "湖景打卡",
+          "coord": [81.1625, 44.6094],
+          "shortLabel": "赛湖"
+        },
+        {
+          "order": 3,
+          "placeKey": "guozigou-bridge",
+          "name": "果子沟大桥",
+          "role": "公路桥景",
+          "coord": [80.9861, 44.4547],
+          "shortLabel": "果子沟"
+        },
+        {
+          "order": 4,
+          "placeKey": "yining-kokdala",
+          "name": "伊宁/可克达拉",
+          "role": "晚上落脚",
+          "coord": [81.0445, 43.9446],
+          "shortLabel": "伊宁"
+        }
+      ],
+      "mainStops": ["赛里木湖", "果子沟大桥"],
+      "movementType": "长途大巴",
+      "estimatedDriving": "约6-7小时车程，长途转场为主，中途游览湖景和大桥",
+      "eveningBase": "伊宁/可克达拉",
+      "overnightLabel": "夜宿：伊宁/可克达拉",
+      "transportMode": "大巴",
+      "routeSummary": "早上从石河子出发为按上一晚落脚点推断，长距离前往赛里木湖，下午经果子沟大桥，晚上到伊宁/可克达拉落脚。",
+      "focus": "湖边风大，必须加外套",
+      "parentReminder": "湖边拍照好看但风大体感冷，外套要随身带。",
+      "weatherNote": "赛里木湖、博乐一带6月7-14日多云、间歇性降雨和阵雨，早晚与雨后明显变凉。",
+      "safetyNote": "果子沟大桥适合远观拍照，不建议爬高或走危险边坡。"
+    },
+    {
+      "day": 3,
+      "dateLabel": "6月9日",
+      "title": "那拉提大草原-新源/巩留",
+      "morningStart": "伊宁/可克达拉",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "yining-kokdala",
+          "name": "伊宁/可克达拉",
+          "role": "早上出发",
+          "coord": [81.0445, 43.9446],
+          "shortLabel": "伊宁"
+        },
+        {
+          "order": 2,
+          "placeKey": "nalati-grassland",
+          "name": "那拉提大草原",
+          "role": "草原景区",
+          "coord": [83.2585, 43.2332],
+          "shortLabel": "那拉提"
+        },
+        {
+          "order": 3,
+          "placeKey": "sky-grassland",
+          "name": "空中草原",
+          "role": "草原打卡",
+          "coord": [83.3677, 43.2444],
+          "shortLabel": "空中草原"
+        },
+        {
+          "order": 4,
+          "placeKey": "xinyuan-gongliu",
+          "name": "新源/巩留",
+          "role": "晚上落脚",
+          "coord": [83.2582, 43.4342],
+          "shortLabel": "新源"
+        }
+      ],
+      "mainStops": ["那拉提大草原", "空中草原"],
+      "movementType": "草原景交",
+      "estimatedDriving": "伊宁/可克达拉到那拉提约4-5小时车程，景区内以景交车游览为主",
+      "eveningBase": "新源/巩留",
+      "overnightLabel": "夜宿：新源/巩留",
+      "transportMode": "大巴+景交车",
+      "routeSummary": "早上从伊宁/可克达拉出发为按上一晚落脚点推断，前往那拉提草原，景区内以景交车游览，晚上到新源/巩留落脚。",
+      "focus": "草原天气最不稳定",
+      "parentReminder": "拍照可穿亮色外套或长裙，但里面一定加打底裤。",
+      "weatherNote": "新源/那拉提6月7-14日多次有降雨，白天约16-24℃，低温可到7-12℃。",
+      "safetyNote": "建议坐景交车为主，少走野路，草地湿滑时慢走。"
+    },
+    {
+      "day": 4,
+      "dateLabel": "6月10日",
+      "title": "天山花海-喀赞其民俗村-博乐/双河/奎屯",
+      "morningStart": "新源/巩留",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "xinyuan-gongliu",
+          "name": "新源/巩留",
+          "role": "早上出发",
+          "coord": [83.2582, 43.4342],
+          "shortLabel": "新源"
+        },
+        {
+          "order": 2,
+          "placeKey": "tianshan-flower-sea",
+          "name": "天山花海",
+          "role": "花海拍照",
+          "coord": [81.5252, 43.9575],
+          "shortLabel": "花海"
+        },
+        {
+          "order": 3,
+          "placeKey": "kazanchi",
+          "name": "喀赞其民俗村",
+          "role": "民俗街区",
+          "coord": [81.3329, 43.9091],
+          "shortLabel": "喀赞其"
+        },
+        {
+          "order": 4,
+          "placeKey": "bole-shuanghe-kuitun",
+          "name": "博乐/双河/奎屯",
+          "role": "晚上落脚",
+          "coord": [82.9869, 44.4271],
+          "shortLabel": "奎屯"
+        }
+      ],
+      "mainStops": ["天山花海", "喀赞其民俗村"],
+      "movementType": "长途大巴",
+      "estimatedDriving": "全天约5-7小时车程，游览之间和晚间落脚都有较长转场",
+      "eveningBase": "博乐/双河/奎屯",
+      "overnightLabel": "夜宿：博乐/双河/奎屯",
+      "transportMode": "大巴",
+      "routeSummary": "早上从新源/巩留出发为按上一晚落脚点推断，上午看天山花海，下午逛喀赞其民俗村，之后前往博乐/双河/奎屯落脚。",
+      "focus": "轻松游玩，注意饮食",
+      "parentReminder": "父母肠胃弱的话，羊肉、奶制品、冷饮都要控制量。",
+      "weatherNote": "花海和街区游览以户外为主，注意防晒和临时降雨。",
+      "safetyNote": "民俗街区人流多，跟紧团队，少吃太杂避免肠胃不适。"
+    },
+    {
+      "day": 5,
+      "dateLabel": "6月11日",
+      "title": "独山子大峡谷-乌鲁木齐/昌吉",
+      "morningStart": "博乐/双河/奎屯",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "bole-shuanghe-kuitun",
+          "name": "博乐/双河/奎屯",
+          "role": "早上出发",
+          "coord": [82.9869, 44.4271],
+          "shortLabel": "奎屯"
+        },
+        {
+          "order": 2,
+          "placeKey": "dushanzi-grand-canyon",
+          "name": "独山子大峡谷",
+          "role": "峡谷地貌",
+          "coord": [84.8824, 44.0733],
+          "shortLabel": "独山子"
+        },
+        {
+          "order": 3,
+          "placeKey": "urumqi-changji",
+          "name": "乌鲁木齐/昌吉",
+          "role": "晚上落脚",
+          "coord": [87.6168, 43.8256],
+          "shortLabel": "乌鲁木齐"
+        }
+      ],
+      "mainStops": ["独山子大峡谷"],
+      "movementType": "长途大巴",
+      "estimatedDriving": "约4-5小时车程，峡谷游览后继续转场到乌鲁木齐/昌吉",
+      "eveningBase": "乌鲁木齐/昌吉",
+      "overnightLabel": "夜宿：乌鲁木齐/昌吉",
+      "transportMode": "大巴",
+      "routeSummary": "早上从博乐/双河/奎屯出发为按上一晚落脚点推断，游览独山子大峡谷，晚上到乌鲁木齐/昌吉落脚。",
+      "focus": "峡谷安全第一",
+      "parentReminder": "父母出行要跟着导游和大部队走，不单独行动。",
+      "weatherNote": "峡谷区域风和日晒都可能较强，注意防晒、补水。",
+      "safetyNote": "不要靠近无护栏边缘，不要为了拍照跨越围栏。"
+    },
+    {
+      "day": 6,
+      "dateLabel": "6月12日",
+      "title": "和田玉展览馆-天山天池-红酒晚宴",
+      "morningStart": "乌鲁木齐/昌吉",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "urumqi-changji",
+          "name": "乌鲁木齐/昌吉",
+          "role": "早上出发",
+          "coord": [87.6168, 43.8256],
+          "shortLabel": "乌鲁木齐"
+        },
+        {
+          "order": 2,
+          "placeKey": "hetian-jade-exhibition",
+          "name": "和田玉展览馆",
+          "role": "展览/购物",
+          "coord": [87.5750, 43.7820],
+          "shortLabel": "玉展馆"
+        },
+        {
+          "order": 3,
+          "placeKey": "tianshan-tianchi",
+          "name": "天山天池",
+          "role": "天池景区",
+          "coord": [88.1292, 43.8849],
+          "shortLabel": "天池"
+        },
+        {
+          "order": 4,
+          "placeKey": "wine-dinner",
+          "name": "红酒晚宴",
+          "role": "晚餐体验",
+          "coord": [87.6168, 43.8256],
+          "shortLabel": "晚宴"
+        },
+        {
+          "order": 5,
+          "placeKey": "urumqi-changji-overnight",
+          "name": "乌鲁木齐/昌吉",
+          "role": "晚上落脚",
+          "coord": [87.6168, 43.8256],
+          "shortLabel": "乌鲁木齐"
+        }
+      ],
+      "mainStops": ["和田玉展览馆", "天山天池", "红酒晚宴"],
+      "movementType": "城市周边",
+      "estimatedDriving": "约2-3小时车程，主要是乌鲁木齐/昌吉与天池之间往返",
+      "eveningBase": "乌鲁木齐/昌吉",
+      "overnightLabel": "夜宿：乌鲁木齐/昌吉",
+      "transportMode": "大巴",
+      "routeSummary": "早上从乌鲁木齐/昌吉出发，上午展馆安排，下午去天山天池，晚上参加红酒晚宴后继续在乌鲁木齐/昌吉落脚。",
+      "focus": "购物点理性，天池带外套",
+      "parentReminder": "喜欢再买，不懂不买，不被话术催单。",
+      "weatherNote": "天池/阜康6月7-14日有阵雨和明显温差，部分日期低温约9-13℃。",
+      "safetyNote": "天池山区比市区冷，带冲锋衣或薄羽绒，景区台阶和湿滑路面慢走。"
+    },
+    {
+      "day": 7,
+      "dateLabel": "6月13日",
+      "title": "新疆宝藏馆-边疆之花-南山牧场",
+      "morningStart": "乌鲁木齐/昌吉",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "urumqi-changji",
+          "name": "乌鲁木齐/昌吉",
+          "role": "早上出发",
+          "coord": [87.6168, 43.8256],
+          "shortLabel": "乌鲁木齐"
+        },
+        {
+          "order": 2,
+          "placeKey": "xinjiang-treasure-museum",
+          "name": "新疆宝藏馆",
+          "role": "展馆参观",
+          "coord": [87.5850, 43.8170],
+          "shortLabel": "宝藏馆"
+        },
+        {
+          "order": 3,
+          "placeKey": "frontier-flower",
+          "name": "边疆之花",
+          "role": "体验打卡",
+          "coord": [87.6000, 43.7900],
+          "shortLabel": "边疆之花"
+        },
+        {
+          "order": 4,
+          "placeKey": "nanshan-pasture",
+          "name": "南山牧场",
+          "role": "牧场风景",
+          "coord": [87.1910, 43.4710],
+          "shortLabel": "南山牧场"
+        },
+        {
+          "order": 5,
+          "placeKey": "shihezi-return-base",
+          "name": "石河子",
+          "role": "晚上落脚",
+          "coord": [86.0804, 44.3059],
+          "shortLabel": "石河子"
+        }
+      ],
+      "mainStops": ["新疆宝藏馆", "边疆之花", "南山牧场"],
+      "movementType": "城市周边",
+      "estimatedDriving": "约4-5小时车程，含市区展馆、南山牧场往返及前往返程城市落脚",
+      "eveningBase": "石河子",
+      "overnightLabel": "夜宿：石河子",
+      "transportMode": "大巴",
+      "routeSummary": "早上从乌鲁木齐/昌吉出发为按上一晚落脚点推断，上午展馆类行程，下午去南山牧场，考虑 Day 8 从石河子返程，晚上落脚石河子为合理推断。",
+      "focus": "收尾轻松游",
+      "parentReminder": "帽子、墨镜、防晒一定带，不要穿网面鞋、薄底鞋。",
+      "weatherNote": "牧场风大、紫外线强，草地湿滑时体感更冷。",
+      "safetyNote": "草地湿滑时容易崴脚，穿防滑舒适的鞋，慢走不离队。"
+    },
+    {
+      "day": 8,
+      "dateLabel": "6月14日",
+      "title": "石河子-无锡-昆山",
+      "morningStart": "石河子",
+      "numberedStops": [
+        {
+          "order": 1,
+          "placeKey": "shihezi",
+          "name": "石河子",
+          "role": "早上出发",
+          "coord": [86.0804, 44.3059],
+          "shortLabel": "石河子"
+        },
+        {
+          "order": 2,
+          "placeKey": "wuxi-airport",
+          "name": "无锡硕放机场",
+          "role": "航班抵达",
+          "coord": [120.4294, 31.4944],
+          "shortLabel": "无锡"
+        },
+        {
+          "order": 3,
+          "placeKey": "kunshan",
+          "name": "昆山/家",
+          "role": "回家",
+          "coord": [120.9807, 31.3856],
+          "shortLabel": "回家"
+        }
+      ],
+      "mainStops": ["石河子", "无锡硕放机场", "昆山/家"],
+      "movementType": "返程",
+      "estimatedDriving": "石河子市区到机场及无锡到昆山合计约2-3小时地面交通，另有返程航班时间",
+      "eveningBase": "回家",
+      "overnightLabel": "返程：回家",
+      "transportMode": "汽车+飞机",
+      "routeSummary": "早上从石河子出发，确认航班和行李，乘机返回无锡后再回昆山/家。",
+      "focus": "提前收拾、确认航班",
+      "parentReminder": "前一晚把证件、手机、充电宝、药品、贵重物品单独放一个随身包。",
+      "weatherNote": "返程日以机场和交通衔接为主，提前关注航班动态。",
+      "safetyNote": "返程当天不要买太多液体、刀具、喷雾类物品，避免安检麻烦。"
+    }
+  ]
+}

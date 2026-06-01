@@ -420,6 +420,7 @@
       <h1 id="dayTitle">抵达入住</h1>
       <p class="route-line" id="routeLine">无锡 → 石河子</p>
       <p class="stay-line" id="stayLine">夜宿：石河子</p>
+      <p class="caption" id="driveLine">昆山到无锡机场约1-1.5小时车程</p>
       <div class="actions">
         <button class="control-button primary" id="playButton" type="button">播放</button>
         <button class="control-button" id="detailButton" type="button">详情</button>
@@ -444,38 +445,10 @@
   </main>
 
   <script>
-    const places = {
-      wuxi: { name: "无锡", note: "航班端点", coord: [120.312, 31.491], kind: "flight" },
-      shihezi: { name: "石河子", note: "进出疆机场", coord: [86.0806, 44.3061], kind: "flight" },
-      sailimu: { name: "赛里木湖", note: "湖景", coord: [81.1743, 44.6139] },
-      guozigou: { name: "果子沟大桥", note: "桥景", coord: [80.9622, 44.4556] },
-      yining: { name: "伊宁", note: "夜宿方向", coord: [81.28, 43.94] },
-      nalati: { name: "那拉提", note: "草原", coord: [84.2704, 43.2625] },
-      xinyuan: { name: "新源/巩留", note: "夜宿方向", coord: [83.2629, 43.4304] },
-      flower: { name: "天山花海", note: "拍照", coord: [81.1808, 43.9631] },
-      kazanqi: { name: "喀赞其", note: "民俗街区", coord: [81.3267, 43.9089] },
-      kuitun: { name: "奎屯", note: "夜宿方向", coord: [84.9023, 44.4269] },
-      dushanzi: { name: "独山子峡谷", note: "峡谷地貌", coord: [84.8062, 44.0923] },
-      urumqi: { name: "乌鲁木齐", note: "夜宿方向", coord: [87.6168, 43.8256] },
-      tianchi: { name: "天山天池", note: "景区", coord: [88.1201, 43.8943] },
-      nanshan: { name: "南山牧场", note: "牧场", coord: [87.1798, 43.4509] }
-    };
-
-    const itinerary = [
-      { day: 1, theme: "抵达入住", route: "无锡 → 石河子", desc: "08:00 从无锡起飞，13:20 抵达石河子。当天只处理抵达和入住。", stay: "石河子", tags: ["航班", "抵达", "入住"], mode: "flight", path: ["wuxi", "shihezi"] },
-      { day: 2, theme: "湖景与公路桥", route: "石河子 → 赛里木湖 → 果子沟 → 伊宁", desc: "这天核心是湖景和果子沟大桥，晚上停到伊犁方向。", stay: "伊宁/可克达拉方向", tags: ["赛里木湖", "果子沟", "伊犁"], mode: "car", path: ["shihezi", "sailimu", "guozigou", "yining"] },
-      { day: 3, theme: "草原风景", route: "伊宁 → 那拉提 → 新源/巩留", desc: "重点看那拉提大草原和空中草原，晚上落在新源/巩留方向。", stay: "新源/巩留方向", tags: ["那拉提", "空中草原", "草原"], mode: "car", path: ["yining", "nalati", "xinyuan"] },
-      { day: 4, theme: "花海与民俗", route: "新源/巩留 → 天山花海 → 喀赞其 → 奎屯", desc: "花海拍照后去喀赞其民俗村，再往奎屯/双河/博乐方向移动。", stay: "奎屯/双河/博乐方向", tags: ["天山花海", "喀赞其", "转场"], mode: "car", path: ["xinyuan", "flower", "kazanqi", "kuitun"] },
-      { day: 5, theme: "峡谷地貌", route: "奎屯 → 独山子大峡谷 → 乌鲁木齐", desc: "看独山子大峡谷，然后进入乌鲁木齐/昌吉方向。", stay: "乌鲁木齐/昌吉方向", tags: ["独山子", "峡谷", "乌鲁木齐"], mode: "car", path: ["kuitun", "dushanzi", "urumqi"] },
-      { day: 6, theme: "展馆与天池", route: "乌鲁木齐 → 天山天池 → 乌鲁木齐", desc: "有展馆/购物属性安排，也有天山天池景区和红酒晚宴。", stay: "乌鲁木齐/昌吉方向", tags: ["和田玉", "天山天池", "晚宴"], mode: "car", path: ["urumqi", "tianchi", "urumqi"] },
-      { day: 7, theme: "体验与牧场", route: "乌鲁木齐 → 南山牧场 → 乌鲁木齐", desc: "展馆/体验类安排后去南山牧场，看牧场风景。", stay: "乌鲁木齐/昌吉方向", tags: ["宝藏馆", "边疆之花", "南山牧场"], mode: "car", path: ["urumqi", "nanshan", "urumqi"] },
-      { day: 8, theme: "返程", route: "乌鲁木齐 → 石河子 → 无锡", desc: "回到石河子机场，14:05 起飞，18:40 抵达无锡。", stay: "回家", tags: ["石河子", "返程", "无锡"], mode: "return", path: ["urumqi", "shihezi", "wuxi"] }
-    ];
-
     const colors = { flight: "#2563eb", car: "#c05a22", return: "#6d35c6" };
     const dayButtons = [];
-    const stopMarkers = new Map();
-    const labelMarkers = new Map();
+    let tripData = null;
+    let activeMarkers = [];
     let activeIndex = 0;
     let playTimer = null;
     let mapReady = false;
@@ -514,10 +487,27 @@
     window.tripMap = map;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
 
-    function coordinates(keys, mode) {
-      const raw = keys.map((key) => places[key].coord);
-      if (mode === "flight") return curvedLine(raw[0], raw[1], 84);
-      if (mode === "return") return [...straightLine(raw[0], raw[1], 24), ...curvedLine(raw[1], raw[2], 84).slice(1)];
+    function modeKey(item) {
+      if (item.transportMode.includes("飞机") && item.day === 1) return "flight";
+      if (item.movementType === "返程") return "return";
+      return "car";
+    }
+
+    function stopCoords(item) {
+      return item.numberedStops.map((stop) => stop.coord);
+    }
+
+    function coordinates(item) {
+      const raw = stopCoords(item);
+      const mode = modeKey(item);
+      if (mode === "flight") {
+        if (raw.length > 2) return [...straightLine(raw[0], raw[1], 16), ...curvedLine(raw[1], raw[raw.length - 1], 84).slice(1)];
+        return curvedLine(raw[0], raw[1], 84);
+      }
+      if (mode === "return") {
+        if (raw.length > 2) return [...curvedLine(raw[0], raw[1], 84), ...straightLine(raw[1], raw[2], 16).slice(1)];
+        return curvedLine(raw[0], raw[1], 84);
+      }
       return raw.flatMap((point, index) => index === 0 ? [point] : straightLine(raw[index - 1], point, 24).slice(1));
     }
 
@@ -539,10 +529,11 @@
     }
 
     function routeFeature(item, visibleCoords = null) {
+      const mode = modeKey(item);
       return {
         type: "Feature",
-        properties: { day: item.day, mode: item.mode, color: colors[item.mode] },
-        geometry: { type: "LineString", coordinates: visibleCoords || coordinates(item.path, item.mode) }
+        properties: { day: item.day, mode, color: colors[mode] },
+        geometry: { type: "LineString", coordinates: visibleCoords || coordinates(item) }
       };
     }
 
@@ -551,7 +542,7 @@
     }
 
     function addMapLayers() {
-      map.addSource("all-routes", { type: "geojson", data: collection(itinerary.map((item) => routeFeature(item))) });
+      map.addSource("all-routes", { type: "geojson", data: collection(tripData.days.map((item) => routeFeature(item))) });
       map.addSource("active-route", { type: "geojson", data: collection() });
 
       map.addLayer({
@@ -577,69 +568,77 @@
       });
     }
 
-    function addMarkers() {
-      Object.entries(places).forEach(([key, place]) => {
-        const pin = document.createElement("div");
-        pin.className = `stop-marker ${place.kind === "flight" ? "flight" : ""}`;
-        pin.textContent = "·";
-        pin.title = place.name;
-        new maplibregl.Marker({ element: pin, anchor: "center" }).setLngLat(place.coord).addTo(map);
-        stopMarkers.set(key, pin);
+    function clearActiveMarkers() {
+      activeMarkers.forEach((marker) => marker.remove());
+      activeMarkers = [];
+    }
 
-        const label = document.createElement("div");
-        label.className = "stop-label";
-        label.innerHTML = `<span>${place.note}</span><b>${place.name}</b>`;
-        new maplibregl.Marker({ element: label, anchor: "bottom", offset: [0, -22] }).setLngLat(place.coord).addTo(map);
-        labelMarkers.set(key, label);
+    function addMarkersForDay(item) {
+      clearActiveMarkers();
+      item.numberedStops.forEach((stop, index) => {
+        const offset = markerOffset(stop, item);
+        const pin = document.createElement("div");
+        const isFlight = stop.role.includes("乘机") || stop.role.includes("航班");
+        pin.className = `stop-marker visible ${isFlight ? "flight" : ""} ${index === 0 ? "start" : ""} ${index === item.numberedStops.length - 1 ? "end" : ""}`;
+        pin.textContent = stop.order;
+        pin.title = stop.name;
+        activeMarkers.push(new maplibregl.Marker({ element: pin, anchor: "center", offset }).setLngLat(stop.coord).addTo(map));
+
+        const shouldLabel = index === 0 || index === item.numberedStops.length - 1 || item.numberedStops.length <= 2;
+        if (shouldLabel) {
+          const label = document.createElement("div");
+          label.className = "stop-label visible";
+          label.innerHTML = `<span>${stop.role}</span><b>${stop.shortLabel || stop.name}</b>`;
+          activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "bottom", offset: [offset[0], offset[1] - 22] }).setLngLat(stop.coord).addTo(map));
+        }
       });
+    }
+
+    function markerOffset(stop) {
+      if (stop.placeKey === "kunshan") return [-24, 0];
+      if (stop.placeKey === "wuxi-airport") return [24, 0];
+      return [0, 0];
     }
 
     function renderRail() {
       const rail = document.getElementById("dayRail");
-      itinerary.forEach((item, index) => {
+      tripData.days.forEach((item, index) => {
         const button = document.createElement("button");
         button.className = "day-button";
         button.type = "button";
-        button.innerHTML = `<b>D${item.day}</b><span>${item.theme}</span>`;
+        button.innerHTML = `<b>D${item.day}</b><span>${shortTitle(item)}</span>`;
         button.addEventListener("click", () => selectDay(index));
         rail.appendChild(button);
         dayButtons.push(button);
       });
     }
 
+    function shortTitle(item) {
+      return item.focus.replace("，", "、").split("、")[0].slice(0, 5);
+    }
+
+    function routeText(item) {
+      return item.numberedStops.map((stop) => stop.shortLabel || stop.name).join(" → ");
+    }
+
     function updateText(item) {
       document.getElementById("dayChip").textContent = `第${item.day}天`;
-      document.getElementById("modePill").textContent = item.mode === "flight" ? "飞机" : item.mode === "return" ? "返程" : "汽车";
-      document.getElementById("dayTitle").textContent = item.theme;
-      document.getElementById("routeLine").textContent = item.route;
-      document.getElementById("stayLine").textContent = item.day === 8 ? "返程：回家" : `夜宿：${item.stay}`;
-      document.getElementById("sheetTitle").textContent = `第${item.day}天 · ${item.theme}`;
-      document.getElementById("detailRoute").textContent = item.route;
-      document.getElementById("detailDesc").textContent = item.desc;
+      document.getElementById("modePill").textContent = item.transportMode;
+      document.getElementById("dayTitle").textContent = item.focus;
+      document.getElementById("routeLine").textContent = routeText(item);
+      document.getElementById("stayLine").textContent = item.overnightLabel;
+      document.getElementById("driveLine").textContent = item.estimatedDriving;
+      document.getElementById("sheetTitle").textContent = `第${item.day}天 · ${item.focus}`;
+      document.getElementById("detailRoute").textContent = item.routeSummary;
+      document.getElementById("detailDesc").textContent = item.parentReminder;
       document.getElementById("nightLabel").textContent = item.day === 8 ? "返程" : "当天晚上";
-      document.getElementById("nightPlace").textContent = item.stay;
-      document.getElementById("chips").innerHTML = item.tags.map((tag) => `<span class="chip">${tag}</span>`).join("");
-    }
-
-    function uniqueKeys(keys) {
-      return [...new Set(keys)];
-    }
-
-    function updateMarkers(item) {
-      const visible = uniqueKeys(item.path);
-      stopMarkers.forEach((el, key) => {
-        const index = visible.indexOf(key);
-        el.classList.toggle("visible", index >= 0);
-        el.classList.toggle("start", index === 0);
-        el.classList.toggle("end", index === visible.length - 1);
-        el.textContent = index >= 0 ? String(index + 1) : "·";
-      });
-
-      labelMarkers.forEach((el, key) => {
-        const index = visible.indexOf(key);
-        const shouldLabel = index === 0 || index === visible.length - 1 || visible.length <= 2;
-        el.classList.toggle("visible", shouldLabel);
-      });
+      document.getElementById("nightPlace").textContent = item.eveningBase;
+      document.getElementById("chips").innerHTML = [
+        `早上：${item.morningStart}`,
+        item.movementType,
+        item.estimatedDriving,
+        ...item.mainStops
+      ].map((tag) => `<span class="chip">${tag}</span>`).join("");
     }
 
     function boundsForCoords(coords) {
@@ -655,11 +654,11 @@
     function selectDay(index) {
       if (!mapReady) return;
       activeIndex = index;
-      const item = itinerary[index];
-      const coords = coordinates(item.path, item.mode);
+      const item = tripData.days[index];
+      const coords = coordinates(item);
 
       updateText(item);
-      updateMarkers(item);
+      addMarkersForDay(item);
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === index));
       dayButtons[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
       document.getElementById("detailSheet").classList.remove("open");
@@ -668,7 +667,7 @@
       map.getSource("active-route").setData(collection());
       map.fitBounds(boundsForCoords(coords), {
         padding: responsivePadding(),
-        maxZoom: item.mode === "flight" || item.mode === "return" ? 5.4 : 8.8,
+        maxZoom: modeKey(item) === "flight" || modeKey(item) === "return" ? 5.4 : 8.8,
         duration: 650
       });
       animateRoute(item, coords);
@@ -701,7 +700,7 @@
       document.getElementById("playButton").textContent = "暂停";
       selectDay(0);
       playTimer = setInterval(() => {
-        if (activeIndex >= itinerary.length - 1) {
+        if (activeIndex >= tripData.days.length - 1) {
           stopPlayback();
           return;
         }
@@ -709,12 +708,21 @@
       }, 2300);
     }
 
-    map.on("load", () => {
+    async function init() {
+      const response = await fetch("data/itinerary-structured.json");
+      tripData = await response.json();
       addMapLayers();
-      addMarkers();
       renderRail();
       mapReady = true;
       selectDay(0);
+    }
+
+    map.on("load", () => {
+      init().catch((error) => {
+        console.error(error);
+        document.getElementById("dayTitle").textContent = "行程数据加载失败";
+        document.getElementById("routeLine").textContent = "请检查 data/itinerary-structured.json";
+      });
     });
 
     document.getElementById("playButton").addEventListener("click", playRoute);
