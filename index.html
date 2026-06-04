@@ -72,7 +72,7 @@
       top: max(12px, env(safe-area-inset-top));
       right: 12px;
       left: 12px;
-      z-index: 5;
+      z-index: 8;
       padding: 14px;
       border: 1px solid rgba(27, 42, 55, 0.12);
       border-radius: 8px;
@@ -194,21 +194,29 @@
 
     .detail-route {
       margin: 0;
-      font-size: 15px;
-      line-height: 1.55;
-      font-weight: 760;
+      padding: 11px 12px;
+      border: 1px solid rgba(27, 42, 55, 0.1);
+      border-radius: 8px;
+      background: rgba(248, 251, 252, 0.92);
+      font-size: 14px;
+      line-height: 1.5;
+      font-weight: 780;
     }
 
     .detail-desc {
-      margin: 12px 0 0;
+      display: none;
+      margin: 10px 0 0;
       color: var(--muted);
       font-size: 14px;
       line-height: 1.65;
     }
 
     .night-box {
-      margin-top: 14px;
-      padding: 12px 13px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2px;
+      margin-top: 12px;
+      padding: 11px 12px;
       border: 1px solid rgba(164, 90, 19, 0.22);
       border-radius: 8px;
       background: #fff8ed;
@@ -238,19 +246,192 @@
     .night-box .night-hotel:empty { display: none; }
 
     .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
     }
 
     .chip {
-      padding: 6px 9px;
-      border-radius: 7px;
-      background: #edf6f4;
-      color: #155e57;
+      display: grid;
+      gap: 3px;
+      min-height: 58px;
+      padding: 9px 10px;
+      border: 1px solid rgba(15, 118, 110, 0.13);
+      border-radius: 8px;
+      background: rgba(237, 246, 244, 0.78);
+      color: var(--ink);
       font-size: 12px;
-      font-weight: 740;
+      font-weight: 760;
+      line-height: 1.35;
+    }
+
+    .chip b {
+      color: #155e57;
+      font-size: 11px;
+      font-weight: 840;
+    }
+
+    .chip span {
+      color: var(--ink);
+    }
+
+    .guide-block {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .guide-section {
+      display: grid;
+      gap: 8px;
+    }
+
+    .guide-section h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.2;
+      font-weight: 840;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .guide-list {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .guide-list li {
+      padding: 8px 10px 8px 12px;
+      border: 1px solid rgba(27, 42, 55, 0.1);
+      border-left: 3px solid rgba(15, 118, 110, 0.4);
+      border-radius: 8px;
+      background: rgba(248, 251, 252, 0.88);
+      color: #31404d;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .food-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(152px, 1fr));
+      gap: 9px;
+    }
+
+    .food-card {
+      overflow: hidden;
+      border: 1px solid rgba(164, 90, 19, 0.18);
+      border-radius: 8px;
+      background: #fff8ed;
+    }
+
+    .food-image-button {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: zoom-in;
+    }
+
+    .food-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: #f1e5d2;
+    }
+
+    .food-card figcaption {
+      display: grid;
+      gap: 3px;
+      padding: 8px 9px 9px;
+    }
+
+    .food-card b {
+      color: #7a4a12;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .food-card span {
+      color: #8a5a1f;
+      font-size: 12px;
+      font-weight: 680;
+      line-height: 1.4;
+    }
+
+    .image-viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(11, 18, 24, 0.72);
+    }
+
+    .image-viewer.open { display: grid; }
+
+    .image-viewer figure {
+      position: relative;
+      display: grid;
+      gap: 9px;
+      width: min(92vw, 760px);
+      margin: 0;
+      color: #fff;
+    }
+
+    .image-viewer img {
+      display: block;
+      max-width: 100%;
+      max-height: 72vh;
+      border-radius: 8px;
+      object-fit: contain;
+      background: #111820;
+      box-shadow: 0 20px 56px rgba(0, 0, 0, 0.32);
+    }
+
+    .image-viewer figcaption {
+      font-size: 14px;
+      font-weight: 760;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .viewer-close {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.96);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 820;
     }
 
     .day-rail {
@@ -286,6 +467,10 @@
     }
 
     .route-caption::-webkit-scrollbar { display: none; }
+
+    .app.detail-open .route-caption {
+      display: none;
+    }
 
     .overview-list {
       position: absolute;
@@ -557,7 +742,7 @@
     }
 
     .maplibregl-ctrl-bottom-left,
-    .maplibregl-ctrl-bottom-right { z-index: 7; }
+    .maplibregl-ctrl-bottom-right { z-index: 6; }
 
     .maplibregl-ctrl-bottom-right { margin-bottom: 88px; }
 
@@ -721,12 +906,20 @@
           <b id="nightHotel" class="night-hotel"></b>
         </div>
         <div class="chips" id="chips"></div>
+        <div class="guide-block" id="travelGuide"></div>
       </div>
     </section>
 
     <nav class="day-rail" id="dayRail" aria-label="选择行程天数"></nav>
     <div class="overview-list" id="overviewList" aria-label="汇总列表"></div>
     <div class="route-caption" id="routeCaption" aria-label="当天路线索引"></div>
+    <div class="image-viewer" id="imageViewer" aria-hidden="true">
+      <figure>
+        <button class="viewer-close" id="viewerClose" type="button" aria-label="关闭大图">×</button>
+        <img id="viewerImage" alt="" />
+        <figcaption id="viewerCaption"></figcaption>
+      </figure>
+    </div>
   </main>
 
   <script id="itinerary-data" type="application/json">
@@ -1168,6 +1361,61 @@
     let mapReady = false;
     let animationFrame = null;
 
+    const foodImages = {
+      dapanji: "https://commons.wikimedia.org/wiki/Special:FilePath/Dapanji%20Uyghur%20Style.jpg?width=640",
+      laghman: "https://commons.wikimedia.org/wiki/Special:FilePath/Uyghur%20Lagman.jpg?width=640",
+      samsa: "https://commons.wikimedia.org/wiki/Special:FilePath/Mutton%20samsa.jpg?width=640",
+      pilaf: "https://commons.wikimedia.org/wiki/Special:FilePath/Plov%20with%20lamb%20and%20carrots%20in%20ceramic%20bowl.jpg?width=640",
+      shashlik: "https://commons.wikimedia.org/wiki/Special:FilePath/Cooked%20shashlik.JPG?width=640",
+      naan: "https://commons.wikimedia.org/wiki/Special:FilePath/Naan%20Flatbread%20inside%20Tandoor%2001.jpg?width=640",
+      ayran: "https://commons.wikimedia.org/wiki/Special:FilePath/Ayron.jpg?width=640"
+    };
+
+    const foodCatalog = {
+      dapanji: { name: "新疆大盘鸡", note: "鸡肉、土豆和辣椒炖炒，适合多人分食。", image: foodImages.dapanji },
+      laghman: { name: "拉条子/拌面", note: "新疆常见主食，长途转场后吃一碗很稳。", image: foodImages.laghman },
+      samsa: { name: "羊肉烤包子", note: "外皮烤香，常见馅料是羊肉和洋葱。", image: foodImages.samsa },
+      pilaf: { name: "抓饭", note: "米饭、胡萝卜和羊肉的经典组合。", image: foodImages.pilaf },
+      shashlik: { name: "烤肉/羊肉串", note: "新疆路线上很常见，趁热吃最香。", image: foodImages.shashlik },
+      naan: { name: "馕", note: "适合配烤肉、大盘鸡，也方便路上垫肚子。", image: foodImages.naan },
+      ayran: { name: "爱兰/酸奶饮品", note: "酸乳饮品，适合解腻，肠胃敏感少量尝。", image: foodImages.ayran }
+    };
+
+    const dayGuides = {
+      1: {
+        tips: ["赶飞机当天以轻便为主，证件和手机别离手。", "落地后先休息补水，晚餐别吃太撑。"],
+        foods: ["dapanji", "laghman", "naan"]
+      },
+      2: {
+        tips: ["湖边风大体感冷，披肩或亮色外套拍照、保暖都实用。", "不要为拍照靠近湿滑湖岸或公路边缘。"],
+        foods: ["samsa", "pilaf", "ayran"]
+      },
+      3: {
+        tips: ["草原昼夜温差大，外套随身带。", "草地湿滑时慢走，尽量跟着景区道路和景交线路。"],
+        foods: ["shashlik", "naan", "ayran"]
+      },
+      4: {
+        tips: ["花海拍照别踩踏花田，站在步道边就很漂亮。", "民俗街区人多，随身物品放身前，吃东西别太杂。"],
+        foods: ["samsa", "shashlik", "naan"]
+      },
+      5: {
+        tips: ["峡谷风大日晒强，帽子、墨镜、防滑鞋很实用。", "拍照只在护栏和步道内完成，不靠近崖边。"],
+        foods: ["dapanji", "laghman", "pilaf"]
+      },
+      6: {
+        tips: ["天池山区比市区冷，冲锋衣或薄羽绒随身带。", "台阶和湿滑路面慢走，雨后别急着抢机位。"],
+        foods: ["pilaf", "samsa", "ayran"]
+      },
+      7: {
+        tips: ["牧场紫外线强，帽子、墨镜和防晒要补上。", "草地湿滑容易崴脚，穿防滑鞋，不离队拍远景。"],
+        foods: ["shashlik", "laghman", "naan"]
+      },
+      8: {
+        tips: ["充电宝、证件、药品和贵重物品放随身包。", "液体、喷雾、刀具类少买或托运前确认，避免安检麻烦。"],
+        foods: ["samsa", "naan", "pilaf"]
+      }
+    };
+
     const rasterMapStyle = {
       version: 8,
       sources: {
@@ -1418,22 +1666,99 @@
       document.getElementById("routeLine").textContent = routeText(item);
       document.getElementById("stayLine").textContent = item.overnightLabel;
       document.getElementById("sheetTitle").textContent = `第${item.day}天 · ${item.focus}`;
-      document.getElementById("detailRoute").textContent = item.routeSummary;
-      document.getElementById("detailDesc").textContent = item.parentReminder;
+      document.getElementById("detailRoute").textContent = detailRouteSummary(item);
+      document.getElementById("detailDesc").textContent = "";
       document.getElementById("nightLabel").textContent = item.day === 8 ? "返程" : "当天晚上";
       document.getElementById("nightPlace").textContent = item.eveningBase;
       document.getElementById("nightHotel").textContent = item.hotel ? `酒店：${item.hotel}` : "";
-      const extraChips = [];
-      if (item.assembly) extraChips.push(item.assembly);
-      if (item.flightInfo) extraChips.push(`航班：${item.flightInfo}`);
-      document.getElementById("chips").innerHTML = [
-        `早上：${item.morningStart}`,
-        ...extraChips,
-        item.movementType,
-        item.estimatedDriving,
-        ...item.mainStops
-      ].map((tag) => `<span class="chip">${tag}</span>`).join("");
+      document.getElementById("chips").innerHTML = detailFacts(item).map((fact) => `
+        <span class="chip">
+          <b>${escapeHtml(fact.label)}</b>
+          <span>${escapeHtml(fact.value)}</span>
+        </span>
+      `).join("");
+      renderTravelGuide(item);
       renderRouteCaption(item);
+    }
+
+    function detailRouteSummary(item) {
+      const route = routeText(item);
+      if (item.day === 1) return "清晨集合出发，落地后接机入住；当天重点是赶路、入住和休息。";
+      if (item.day === 8) return "早上出发接驳返程航班，落地后回家；重点是证件、行李和安检。";
+      return `${route}。${item.focus}为当天重点。`;
+    }
+
+    function detailFacts(item) {
+      const facts = [
+        { label: "交通方式", value: item.transportMode }
+      ];
+      if (item.flightInfo) {
+        facts.push({ label: "航班", value: item.flightInfo });
+      }
+      if (item.assembly) {
+        facts.push({ label: "集合", value: item.assembly.replace(/^6月7日\s*/, "") });
+      }
+      facts.push({ label: item.flightInfo ? "接驳提醒" : "转场强度", value: item.estimatedDriving });
+      if (!item.flightInfo) facts.push({ label: "当天节奏", value: item.movementType });
+      return facts.slice(0, 3);
+    }
+
+    function renderTravelGuide(item) {
+      const guide = dayGuides[item.day];
+      const container = document.getElementById("travelGuide");
+      if (!guide) {
+        container.innerHTML = "";
+        return;
+      }
+      container.innerHTML = `
+        <section class="guide-section">
+          <div class="section-head">
+            <h3>注意事项</h3>
+            <span>少而重要</span>
+          </div>
+          <ul class="guide-list">
+            ${guide.tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join("")}
+          </ul>
+        </section>
+        <section class="guide-section">
+          <div class="section-head">
+            <h3>顺路美食</h3>
+            <span>点图看大图</span>
+          </div>
+          <div class="food-grid">
+            ${guide.foods.map((foodKey) => renderFoodCard(foodCatalog[foodKey])).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderFoodCard(food) {
+      if (!food) return "";
+      return `
+        <figure class="food-card">
+          <button class="food-image-button" type="button" data-image="${escapeAttr(food.image)}" data-title="${escapeAttr(food.name)}">
+            <img src="${escapeAttr(food.image)}" alt="${escapeAttr(food.name)}" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('figure').style.display='none'">
+          </button>
+          <figcaption>
+            <b>${escapeHtml(food.name)}</b>
+            <span>${escapeHtml(food.note)}</span>
+          </figcaption>
+        </figure>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
     }
 
     function renderRouteCaption(item) {
@@ -1816,6 +2141,7 @@
     }, 1200);
 
     function setDetailOpen(open) {
+      document.querySelector(".app").classList.toggle("detail-open", open);
       document.querySelector(".top-card").classList.toggle("expanded", open);
       document.getElementById("detailSheet").classList.toggle("open", open);
       document.getElementById("detailButton").textContent = open ? "关闭详情" : "查看详情";
@@ -1831,7 +2157,37 @@
     document.getElementById("detailButton").addEventListener("click", () => {
       setDetailOpen(!document.getElementById("detailSheet").classList.contains("open"));
     });
+
+    document.getElementById("travelGuide").addEventListener("click", (event) => {
+      const button = event.target.closest(".food-image-button");
+      if (!button) return;
+      openImageViewer(button.dataset.image, button.dataset.title);
+    });
+
+    document.getElementById("viewerClose").addEventListener("click", closeImageViewer);
+    document.getElementById("imageViewer").addEventListener("click", (event) => {
+      if (event.target.id === "imageViewer") closeImageViewer();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeImageViewer();
+    });
     window.addEventListener("resize", () => { if (mapReady) map.resize(); });
+
+    function openImageViewer(src, title) {
+      const viewer = document.getElementById("imageViewer");
+      document.getElementById("viewerImage").src = src;
+      document.getElementById("viewerImage").alt = title || "美食图片";
+      document.getElementById("viewerCaption").textContent = title || "";
+      viewer.classList.add("open");
+      viewer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeImageViewer() {
+      const viewer = document.getElementById("imageViewer");
+      viewer.classList.remove("open");
+      viewer.setAttribute("aria-hidden", "true");
+      document.getElementById("viewerImage").src = "";
+    }
   </script>
 </body>
 </html>
