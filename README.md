@@ -10,7 +10,7 @@
 - 按需展开的当天详情抽屉
 - 行程数据已内联在 `index.html`，减少线上请求
 - 本地 `vendor/` 里的 MapLibre GL JS 地图引擎
-- OpenStreetMap 地图底图
+- 高德中文路网地图底图
 
 ## 本地预览
 

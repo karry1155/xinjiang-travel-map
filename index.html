@@ -1168,24 +1168,25 @@
     let mapReady = false;
     let animationFrame = null;
 
-    const openStreetMapStyle = {
+    const rasterMapStyle = {
       version: 8,
       sources: {
-        osm: {
+        base: {
           type: "raster",
           tiles: [
-            "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+            "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+            "https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}",
+            "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}"
           ],
           tileSize: 256,
-          attribution: "© OpenStreetMap contributors"
+          attribution: "© 高德地图"
         }
       },
       layers: [{
-        id: "osm-raster",
+        id: "base-raster",
         type: "raster",
-        source: "osm",
+        source: "base",
         paint: { "raster-opacity": 0.9, "raster-saturation": -0.14, "raster-contrast": -0.04 }
       }]
     };
@@ -1256,7 +1257,7 @@
 
     const map = new maplibregl.Map({
       container: "map",
-      style: openStreetMapStyle,
+      style: rasterMapStyle,
       center: [86.8, 43.7],
       zoom: 5.2,
       pitch: 0,
