@@ -228,6 +228,15 @@
       line-height: 1.35;
     }
 
+    .night-box .night-hotel {
+      margin-top: 2px;
+      color: #7a4a12;
+      font-size: 13px;
+      font-weight: 760;
+    }
+
+    .night-box .night-hotel:empty { display: none; }
+
     .chips {
       display: flex;
       flex-wrap: wrap;
@@ -709,6 +718,7 @@
         <div class="night-box">
           <span id="nightLabel">当天晚上</span>
           <b id="nightPlace">石河子</b>
+          <b id="nightHotel" class="night-hotel"></b>
         </div>
         <div class="chips" id="chips"></div>
       </div>
@@ -986,8 +996,13 @@
       document.getElementById("detailDesc").textContent = item.parentReminder;
       document.getElementById("nightLabel").textContent = item.day === 8 ? "返程" : "当天晚上";
       document.getElementById("nightPlace").textContent = item.eveningBase;
+      document.getElementById("nightHotel").textContent = item.hotel ? `酒店：${item.hotel}` : "";
+      const extraChips = [];
+      if (item.assembly) extraChips.push(item.assembly);
+      if (item.flightInfo) extraChips.push(`航班：${item.flightInfo}`);
       document.getElementById("chips").innerHTML = [
         `早上：${item.morningStart}`,
+        ...extraChips,
         item.movementType,
         item.estimatedDriving,
         ...item.mainStops
