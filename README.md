@@ -8,13 +8,13 @@
 - 手机友好的地图优先界面
 - 当前天起终点和编号停靠点
 - 按需展开的当天详情抽屉
-- `data/itinerary-structured.json` 结构化行程数据
-- MapLibre GL JS 地图引擎
+- 行程数据已内联在 `index.html`，减少线上请求
+- 本地 `vendor/` 里的 MapLibre GL JS 地图引擎
 - OpenStreetMap 地图底图
 
 ## 本地预览
 
-页面会读取 `data/itinerary-structured.json`，浏览器在 `file://` 下会拦截这个请求，所以需要启动静态服务后访问页面。
+建议启动静态服务后访问页面，和 Cloudflare Pages 的线上环境保持一致。
 
 ```bash
 python3 -m http.server 8000
