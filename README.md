@@ -14,7 +14,13 @@
 
 ## 本地预览
 
-直接打开 `index.html`，或启动一个静态服务后访问页面。
+页面会读取 `data/itinerary-structured.json`，浏览器在 `file://` 下会拦截这个请求，所以需要启动静态服务后访问页面。
+
+```bash
+python3 -m http.server 8000
+```
+
+然后打开 `http://localhost:8000/`。
 
 ## Cloudflare Pages
 
