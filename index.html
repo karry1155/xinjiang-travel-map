@@ -1790,6 +1790,7 @@
     }
 
     function init() {
+      if (mapReady) return;
       tripData = JSON.parse(document.getElementById("itinerary-data").textContent);
       addMapLayers();
       renderRail();
@@ -1797,13 +1798,21 @@
       selectDay(0);
     }
 
-    map.on("load", () => {
-      init().catch((error) => {
+    function initWhenStyleIsReady() {
+      try {
+        init();
+      } catch (error) {
         console.error(error);
         document.getElementById("dayTitle").textContent = "行程数据加载失败";
         document.getElementById("routeLine").textContent = "请检查页面内嵌行程数据";
-      });
-    });
+      }
+    }
+
+    map.on("style.load", initWhenStyleIsReady);
+    map.on("load", initWhenStyleIsReady);
+    window.setTimeout(() => {
+      if (map.isStyleLoaded()) initWhenStyleIsReady();
+    }, 1200);
 
     function setDetailOpen(open) {
       document.querySelector(".top-card").classList.toggle("expanded", open);
