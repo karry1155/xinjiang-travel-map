@@ -381,7 +381,8 @@
     .image-viewer {
       position: fixed;
       inset: 0;
-      z-index: 30;
+      /* [前端工程师] 提到 40，确保从"须知"模态(z-index:32)内点开的美食大图叠在模态之上。 */
+      z-index: 40;
       display: none;
       place-items: center;
       padding: 18px;
@@ -472,13 +473,17 @@
       display: none;
     }
 
+    /* [交互设计师] "更多"等浮层原来用 display:none→grid 硬切，打开像"跳出"，体验割裂。优先级：高。
+       [前端工程师] 改为常驻 grid + 透明度/位移过渡（面板 position:absolute，不占文档流，不产生 CLS），
+                    隐藏态用 visibility + pointer-events 关闭交互，打开时柔和淡入上移。 */
     .overview-list {
       position: absolute;
       right: 12px;
       bottom: calc(154px + env(safe-area-inset-bottom));
       left: 12px;
       z-index: 6;
-      display: none;
+      display: grid;
+      gap: 9px;
       max-height: min(42vh, 360px);
       overflow-y: auto;
       padding: 8px;
@@ -487,9 +492,19 @@
       background: rgba(255, 255, 255, 0.95);
       box-shadow: 0 14px 34px rgba(17, 30, 42, 0.16);
       backdrop-filter: blur(16px);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: opacity 220ms ease, transform 220ms ease, visibility 220ms;
+      pointer-events: none;
     }
 
-    .overview-list.open { display: grid; gap: 9px; }
+    .overview-list.open {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+    }
 
     .overview-list.more-panel {
       max-height: min(48vh, 430px);
@@ -531,62 +546,43 @@
       line-height: 1.45;
     }
 
+    /* [交互设计师] "更多"原来每个景点都重复一个"阿/伊"圆形角标，信息噪声大、不如简单列表清晰。优先级：高。
+       [前端工程师] 改为单列表格式列表：地区名只在分组头出现一次，地区色由卡片左边框承担，景点行去掉角标。 */
     .region-spots {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-      gap: 7px;
+      gap: 6px;
     }
 
     .region-spot {
       display: grid;
-      grid-template-columns: 22px 1fr;
-      gap: 5px;
-      align-items: start;
-      min-height: 54px;
-      padding: 7px;
+      gap: 2px;
+      width: 100%;
+      padding: 8px 10px;
       border: 1px solid rgba(27, 42, 55, 0.1);
       border-radius: 8px;
       background: #fff;
       color: var(--ink);
-      font-size: 12px;
-      font-weight: 820;
       text-align: left;
       cursor: pointer;
     }
 
-    .region-spot .dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--teal);
-      color: #fff;
-      font-size: 10px;
-      line-height: 22px;
-      text-align: center;
-    }
-
-    .region-card.altay .dot { background: #2563eb; }
-    .region-card.ili .dot { background: #059669; }
-    .region-card.north-slope .dot { background: #0891b2; }
-    .region-card.south .dot { background: #b45309; }
-    .region-card.east .dot { background: #7c3aed; }
-
-    .region-spot .spot-copy {
-      display: grid;
-      gap: 2px;
-      min-width: 0;
+    .region-spot:hover,
+    .region-spot:focus-visible {
+      border-color: var(--teal);
+      outline: none;
     }
 
     .region-spot .spot-name {
-      font-size: 12px;
-      line-height: 1.15;
+      font-size: 13px;
+      font-weight: 820;
+      line-height: 1.2;
     }
 
     .region-spot .spot-desc {
       color: var(--muted);
-      font-size: 10px;
-      font-weight: 680;
-      line-height: 1.3;
+      font-size: 11px;
+      font-weight: 660;
+      line-height: 1.4;
     }
 
     .overview-list-item {
@@ -850,6 +846,177 @@
       z-index: 1;
     }
 
+    /* [旅行专家] 把每天已有却被埋没的 weatherNote/safetyNote/parentReminder 显性化，原因：天气、安全、家人提醒是游客每天最需要的信息。
+       [交互设计师] 新增"当天贴士"区块，优先级：高，用图标+短文降低阅读成本。
+       [前端工程师] 复用 .guide-section 视觉语言，纯静态渲染、无异步，避免 CLS。 */
+    .day-brief {
+      display: grid;
+      gap: 7px;
+      margin-top: 14px;
+    }
+
+    .brief-item {
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 8px 10px;
+      border: 1px solid rgba(27, 42, 55, 0.1);
+      border-radius: 8px;
+      background: rgba(248, 251, 252, 0.9);
+      color: #31404d;
+      font-size: 12px;
+      font-weight: 680;
+      line-height: 1.45;
+    }
+
+    .brief-item .brief-ico {
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .brief-item b {
+      color: #155e57;
+      font-weight: 820;
+    }
+
+    /* [旅行专家] 6 月伊犁薰衣草/草原野花是一年中最美时段，补"季节亮点"种草。
+       [交互设计师] 情感设计，优先级：中，正向 teal callout 激发向往。 */
+    .brief-item.season {
+      border-color: rgba(15, 118, 110, 0.28);
+      border-left: 3px solid var(--teal);
+      background: rgba(237, 246, 244, 0.85);
+    }
+
+    /* [旅行专家] 和田玉展览馆/红酒晚宴/宝藏馆多为团队购物环节，补理性消费提示。
+       [交互设计师] 警示 amber callout，优先级：中，与正向信息区分。 */
+    .brief-item.shop {
+      border-color: rgba(164, 90, 19, 0.28);
+      border-left: 3px solid var(--gold);
+      background: #fff8ed;
+      color: #7a4a12;
+    }
+
+    .brief-item.shop b { color: #934f0f; }
+
+    /* [交互设计师] 新增全局"出行须知/打包/应急"模态，优先级：高，承载本地专家内容与转化路径。
+       [前端工程师] 仿 .image-viewer 的固定浮层，卡片内滚动、高度封顶，不挤占地图、零布局抖动。 */
+    .info-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 32;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(11, 18, 24, 0.72);
+      /* [交互设计师] 模态同样改为淡入，避免硬切，与浮层动效统一。优先级：中。 */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 200ms ease, visibility 200ms;
+    }
+
+    .info-modal.open { opacity: 1; visibility: visible; }
+
+    .info-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      width: min(94vw, 560px);
+      max-height: min(84vh, 700px);
+      padding: 18px 16px 16px;
+      overflow-y: auto;
+      border-radius: 12px;
+      background: var(--panel);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(16px);
+      /* [前端工程师] 卡片轻微上浮过渡，开合更顺滑。 */
+      transform: translateY(14px);
+      transition: transform 220ms ease;
+    }
+
+    .info-modal.open .info-card { transform: none; }
+
+    /* [前端工程师] 顺路美食区与上方须知卡片留出间距，复用既有 .food-grid/.food-card 与 .section-head。 */
+    .info-food { margin-top: 4px; }
+    .info-food .section-head { margin-bottom: 10px; }
+
+    .info-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .info-head b {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 860;
+    }
+
+    .info-head span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 720;
+    }
+
+    .info-close {
+      position: static;
+      flex: none;
+    }
+
+    .info-section {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 11px;
+      border: 1px solid rgba(27, 42, 55, 0.1);
+      border-left: 3px solid rgba(15, 118, 110, 0.4);
+      border-radius: 8px;
+      background: rgba(248, 251, 252, 0.92);
+    }
+
+    .info-section .info-ico { font-size: 18px; line-height: 1.2; }
+
+    .info-section h4 {
+      margin: 0 0 3px;
+      font-size: 13px;
+      font-weight: 840;
+      color: var(--ink);
+    }
+
+    .info-section p {
+      margin: 0;
+      color: #46545f;
+      font-size: 12px;
+      font-weight: 660;
+      line-height: 1.5;
+    }
+
+    .info-section.warn { border-left-color: var(--gold); background: #fff8ed; }
+    .info-section.warn h4 { color: #934f0f; }
+    .info-section.warn p { color: #7a4a12; }
+
+    .info-empty {
+      padding: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    /* [交互设计师] "须知"入口配蓝色强调，与天数/汇总按钮区分，优先级：高。 */
+    .day-button.overview.info b { color: var(--flight); }
+
+    .day-button.overview.info.active {
+      border-color: rgba(37, 99, 235, 0.42);
+      background: #eef3ff;
+      box-shadow: inset 0 -3px 0 var(--flight);
+    }
+
     @media (min-width: 820px) {
       .top-card {
         right: auto;
@@ -919,6 +1086,21 @@
         <img id="viewerImage" alt="" />
         <figcaption id="viewerCaption"></figcaption>
       </figure>
+    </div>
+
+    <!-- [交互设计师] 出行须知模态：承载本地专家的全局提醒、打包清单与应急电话，优先级：高。
+         [前端工程师] 内容由 JS 从 essentialsData 渲染，含 empty 兜底；aria-hidden 切换无障碍可见性。 -->
+    <div class="info-modal" id="infoModal" aria-hidden="true">
+      <div class="info-card" role="dialog" aria-modal="true" aria-label="出行须知">
+        <div class="info-head">
+          <div>
+            <b id="infoTitle">出行须知</b>
+            <span id="infoSub"></span>
+          </div>
+          <button class="viewer-close info-close" id="infoClose" type="button" aria-label="关闭须知">×</button>
+        </div>
+        <div class="info-body" id="infoBody"></div>
+      </div>
     </div>
   </main>
 
@@ -1381,40 +1563,38 @@
       ayran: { name: "爱兰/酸奶饮品", note: "酸乳饮品，适合解腻，肠胃敏感少量尝。", image: foodImages.ayran }
     };
 
-    const dayGuides = {
-      1: {
-        tips: ["赶飞机当天以轻便为主，证件和手机别离手。", "落地后先休息补水，晚餐别吃太撑。"],
-        foods: ["dapanji", "laghman", "naan"]
-      },
-      2: {
-        tips: ["湖边风大体感冷，披肩或亮色外套拍照、保暖都实用。", "不要为拍照靠近湿滑湖岸或公路边缘。"],
-        foods: ["samsa", "pilaf", "ayran"]
-      },
-      3: {
-        tips: ["草原昼夜温差大，外套随身带。", "草地湿滑时慢走，尽量跟着景区道路和景交线路。"],
-        foods: ["shashlik", "naan", "ayran"]
-      },
-      4: {
-        tips: ["花海拍照别踩踏花田，站在步道边就很漂亮。", "民俗街区人多，随身物品放身前，吃东西别太杂。"],
-        foods: ["samsa", "shashlik", "naan"]
-      },
-      5: {
-        tips: ["峡谷风大日晒强，帽子、墨镜、防滑鞋很实用。", "拍照只在护栏和步道内完成，不靠近崖边。"],
-        foods: ["dapanji", "laghman", "pilaf"]
-      },
-      6: {
-        tips: ["天池山区比市区冷，冲锋衣或薄羽绒随身带。", "台阶和湿滑路面慢走，雨后别急着抢机位。"],
-        foods: ["pilaf", "samsa", "ayran"]
-      },
-      7: {
-        tips: ["牧场紫外线强，帽子、墨镜和防晒要补上。", "草地湿滑容易崴脚，穿防滑鞋，不离队拍远景。"],
-        foods: ["shashlik", "laghman", "naan"]
-      },
-      8: {
-        tips: ["充电宝、证件、药品和贵重物品放随身包。", "液体、喷雾、刀具类少买或托运前确认，避免安检麻烦。"],
-        foods: ["samsa", "naan", "pilaf"]
-      }
+    // [交互设计师] 复盘：原 dayGuides.tips 与 JSON 的 safetyNote/parentReminder 内容重叠，每天的 foods 又把通用新疆菜
+    //            重复洗牌——属于信息冗余。优先级：高。现删除按天 tips（保留 JSON 的天气/注意作为唯一贴士来源），
+    //            并把美食去重为一份全局清单，只在"须知"里展示一次，不再按天重复。
+    // [前端工程师] dayGuides 整体移除；globalFoods 取 foodCatalog 全部条目（天然去重），美食改由出行须知统一渲染。
+    const globalFoods = Object.keys(foodCatalog);
+
+    // [旅行专家] 补充"季节亮点"与"理性购物"两类本地视角内容，原因：6 月伊犁是薰衣草与草原最佳期（最大种草点），
+    //            而和田玉展览馆/红酒晚宴/宝藏馆/边疆之花以本地经验多为团队购物展销环节，应诚实提示。
+    // [交互设计师] 仅在相关天数出现，正向(season)与警示(shop)分色，优先级：中。
+    const dayExtras = {
+      2: { season: "6 月赛里木湖周边金莲花、野花盛开，雪山倒映湖面，是一年中最美的时段之一。" },
+      3: { season: "6 月那拉提河谷草原绿透、野花成片，正值草原最佳观赏期。" },
+      4: { season: "6 月伊犁河谷薰衣草（霍城方向）与天山花海进入花期，色彩最浓，适合拍照。" },
+      6: { shop: "和田玉展览馆、红酒晚宴多为团队购物/餐饮环节；和田玉水深，无专业鉴别建议只看不买大件，留好票据。" },
+      7: { shop: "新疆宝藏馆、边疆之花偏展销体验，按需购买即可，不必冲动消费。" }
     };
+
+    // [旅行专家] 全局出行须知：补齐页面此前完全缺失的时差、证件安检、防晒补水、长途车程、高反、理性购物、
+    //            民俗尊重、通讯网络、打包清单与应急电话，原因：这些是新疆旅行最常被低估、却最影响体验与安全的点。
+    // [交互设计师] 作为统一"出行须知"入口与转化路径（看完知道要准备什么），优先级：高。warn 类用于安全/购物强提示。
+    const essentialsData = [
+      { ico: "🕐", title: "新疆时差与作息", text: "全疆统一用北京时间，但当地实际作息晚约 2 小时。夏季约 22:00–23:00 才天黑，早上集合、航班仍按北京时间，别被天色误导。" },
+      { ico: "🪪", title: "证件与安检", text: "全程随身带身份证，机场、车站、景区、酒店多处人证核验。身份证、登机牌不要放托运行李，随身好拿。", warn: true },
+      { ico: "🧴", title: "防晒与温差", text: "紫外线极强，SPF50 防晒、墨镜、帽子、润唇膏必备；昼夜温差大，备冲锋衣或薄羽绒，湖区/山区更冷。" },
+      { ico: "🚌", title: "长途车程", text: "北疆景点间距大，单日 4–7 小时车程常见。备晕车药、零食、U 型枕；上车前少喝水，沿途服务区与厕所较少。" },
+      { ico: "⛰️", title: "海拔提示", text: "赛里木湖约 2070m，那拉提、天池为中等海拔，多数人无碍；有心肺疾病或高血压者放缓节奏、备好常用药。" },
+      { ico: "💎", title: "理性购物", text: "和田玉展览馆、红酒晚宴、宝藏馆等多为团队购物环节。玉石、保健品水深，无专业鉴别勿大额购买，保留票据与发票。", warn: true },
+      { ico: "🕌", title: "民俗与饮食", text: "以清真饮食为主，牛羊肉、面食居多，肠胃敏感者循序尝试。尊重维吾尔、哈萨克等民族习俗，拍摄当地居民先征得同意。" },
+      { ico: "📶", title: "通讯与网络", text: "草原、山区、峡谷信号弱，建议提前下载离线地图与行程。充电宝需有清晰 3C 标识、不可托运，注意容量限制。" },
+      { ico: "🎒", title: "打包清单", text: "身份证 · 防晒三件套 · 冲锋衣/薄羽绒 · 防滑鞋 · 晕车药与常用药 · 充电宝/数据线 · 保温杯 · 湿巾纸巾 · 亮色衣物（拍照）。" },
+      { ico: "🆘", title: "应急电话", text: "报警 110 · 急救 120 · 火警 119 · 旅游投诉 12301。领队/导游电话与酒店地址以出团通知书为准，建议出发前抄写一份随身带。", warn: true }
+    ];
 
     const rasterMapStyle = {
       version: 8,
@@ -1596,7 +1776,10 @@
       items.forEach((item) => {
         const pin = document.createElement("div");
         pin.className = `overview-marker ${item.kind === "overnight" ? "overnight" : ""} ${item.status || ""}`;
-        pin.innerHTML = `<span>${item.dayLabel}</span><b>${item.label}</b>`;
+        // [交互设计师] "更多"标记不再重复地区角标（地区已由颜色区分），只显示地名，减少地图上"阿/伊"刷屏。优先级：高。
+        pin.innerHTML = item.kind === "more"
+          ? `<b>${item.label}</b>`
+          : `<span>${item.dayLabel}</span><b>${item.label}</b>`;
         pin.title = `${item.dayLabel} ${item.label}`;
         addTrackedMarker(item.key, pin, item.coord);
       });
@@ -1642,13 +1825,20 @@
       [
         { label: "打卡", kind: "scenic" },
         { label: "落脚", kind: "overnight" },
-        { label: "更多", kind: "more" }
+        { label: "更多", kind: "more" },
+        // [交互设计师] 新增"须知"入口承载出行须知/打包/应急，优先级：高；放在 rail 末位、不影响既有按钮索引。
+        { label: "须知", kind: "info" }
       ].forEach((entry) => {
         const overviewButton = document.createElement("button");
         overviewButton.className = `day-button overview ${entry.kind}`;
         overviewButton.type = "button";
         overviewButton.innerHTML = `<b>${entry.label}</b>`;
-        overviewButton.addEventListener("click", () => entry.kind === "more" ? showMore() : showOverview(entry.kind));
+        // [前端工程师] info 入口不进入地图汇总模式、不改变当前选中天，只打开模态，避免打断用户当前浏览的天。
+        overviewButton.addEventListener("click", () => {
+          if (entry.kind === "more") return showMore();
+          if (entry.kind === "info") return openEssentials();
+          return showOverview(entry.kind);
+        });
         rail.appendChild(overviewButton);
         dayButtons.push(overviewButton);
       });
@@ -1660,7 +1850,8 @@
 
     function updateText(item) {
       document.getElementById("detailButton").style.display = "";
-      document.getElementById("dayChip").textContent = `第${item.day}天`;
+      // [交互设计师] 日期 chip 补真实日期（dateLabel 数据已存在却未展示），优先级：高，让用户一眼对上日历。
+      document.getElementById("dayChip").textContent = item.dateLabel ? `第${item.day}天 · ${item.dateLabel}` : `第${item.day}天`;
       document.getElementById("modePill").textContent = item.transportMode;
       document.getElementById("dayTitle").textContent = item.focus;
       document.getElementById("routeLine").textContent = routeText(item);
@@ -1703,33 +1894,42 @@
       return facts.slice(0, 3);
     }
 
-    function renderTravelGuide(item) {
-      const guide = dayGuides[item.day];
-      const container = document.getElementById("travelGuide");
-      if (!guide) {
-        container.innerHTML = "";
-        return;
-      }
-      container.innerHTML = `
+    // [旅行专家] 把每天已写入数据却未展示的 weatherNote/safetyNote/parentReminder 渲染出来，并按天补季节亮点/购物提示。
+    // [交互设计师] 组成"当天贴士"，天气(中性)、安全(中性)、提醒(中性)、季节(正向)、购物(警示)，优先级：高。
+    // [前端工程师] 纯字符串拼接，全部经 escapeHtml 转义；无数据项自动跳过，不产生空卡片。
+    // [旅行专家] 每天只保留两条不重叠的事实：天气（具体温度区间）与注意（safetyNote 的安全/穿戴行为）。
+    //            parentReminder 在第 2–7 天与 safetyNote 几乎同义，已不再单列以免重复。
+    // [交互设计师] "当天贴士"成为按天信息的唯一出口，优先级：高；季节亮点/理性消费仅在相关天追加。
+    function renderDayBrief(item) {
+      const extras = dayExtras[item.day] || {};
+      const rows = [
+        item.weatherNote ? { ico: "🌤️", label: "天气", text: item.weatherNote } : null,
+        item.safetyNote ? { ico: "🛡️", label: "注意", text: item.safetyNote } : null,
+        extras.season ? { ico: "🌸", label: "季节亮点", text: extras.season, cls: "season" } : null,
+        extras.shop ? { ico: "💎", label: "理性消费", text: extras.shop, cls: "shop" } : null
+      ].filter(Boolean);
+      if (!rows.length) return "";
+      return `
         <section class="guide-section">
           <div class="section-head">
-            <h3>注意事项</h3>
-            <span>少而重要</span>
+            <h3>当天贴士</h3>
+            <span>天气 · 注意</span>
           </div>
-          <ul class="guide-list">
-            ${guide.tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join("")}
-          </ul>
-        </section>
-        <section class="guide-section">
-          <div class="section-head">
-            <h3>顺路美食</h3>
-            <span>点图看大图</span>
-          </div>
-          <div class="food-grid">
-            ${guide.foods.map((foodKey) => renderFoodCard(foodCatalog[foodKey])).join("")}
+          <div class="day-brief">
+            ${rows.map((row) => `
+              <div class="brief-item ${row.cls || ""}">
+                <span class="brief-ico" aria-hidden="true">${row.ico}</span>
+                <span><b>${escapeHtml(row.label)}：</b>${escapeHtml(row.text)}</span>
+              </div>
+            `).join("")}
           </div>
         </section>
       `;
+    }
+
+    // [前端工程师] 详情页只渲染去重后的"当天贴士"；原"注意事项""顺路美食"两段已移除（前者重复、后者改为全局一次）。
+    function renderTravelGuide(item) {
+      document.getElementById("travelGuide").innerHTML = renderDayBrief(item);
     }
 
     function renderFoodCard(food) {
@@ -1737,7 +1937,8 @@
       return `
         <figure class="food-card">
           <button class="food-image-button" type="button" data-image="${escapeAttr(food.image)}" data-title="${escapeAttr(food.name)}">
-            <img src="${escapeAttr(food.image)}" alt="${escapeAttr(food.name)}" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('figure').style.display='none'">
+            <!-- [前端工程师] 美食图改 loading=lazy 懒加载，原因：详情页可能含多张外链大图，避免首屏带宽与解码压力；onerror 已做隐藏兜底。 -->
+            <img src="${escapeAttr(food.image)}" alt="${escapeAttr(food.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('figure').style.display='none'">
           </button>
           <figcaption>
             <b>${escapeHtml(food.name)}</b>
@@ -1877,8 +2078,9 @@
       setDetailOpen(false);
       const items = moreItems();
 
+      // [交互设计师] 顶部去掉"下次念想"等装饰性字样，只保留清晰的功能标题，避免像被劫持的"详情页"。优先级：中。
       document.getElementById("dayChip").textContent = "更多";
-      document.getElementById("modePill").textContent = "下次念想";
+      document.getElementById("modePill").textContent = "";
       document.getElementById("dayTitle").textContent = "新疆热门目的地";
       document.getElementById("detailButton").style.display = "none";
       document.getElementById("routeLine").textContent = "";
@@ -1895,6 +2097,7 @@
 
     function renderMorePanel() {
       const list = document.getElementById("overviewList");
+      // [交互设计师] 简洁分组列表：地区名只在分组头出现一次，景点行去掉重复角标，更接近"列个表"的清爽效果。优先级：高。
       list.innerHTML = regionModules.map((group) => `
         <section class="region-card ${group.className}">
           <header>
@@ -1904,11 +2107,8 @@
           <div class="region-spots">
             ${group.spots.map((spot) => `
               <button class="region-spot" type="button" data-marker-key="${moreKey(spot, group)}" title="${spot.desc}">
-                <span class="dot">${group.badge}</span>
-                <span class="spot-copy">
-                  <span class="spot-name">${spot.label}</span>
-                  <span class="spot-desc">${spot.desc}</span>
-                </span>
+                <span class="spot-name">${spot.label}</span>
+                <span class="spot-desc">${spot.desc}</span>
               </button>
             `).join("")}
           </div>
@@ -1917,8 +2117,16 @@
       list.classList.add("more-panel");
       list.classList.toggle("open", overviewListOpen);
       list.querySelectorAll(".region-spot").forEach((button) => {
-        button.addEventListener("click", () => focusMarker(button.dataset.markerKey));
+        button.addEventListener("click", () => focusMoreSpot(button.dataset.markerKey));
       });
+    }
+
+    // [交互设计师] 点景点定位时先收起面板，避免飞过去的地图位置被面板遮挡（原"会被面板挡住"的问题）。优先级：高。
+    // [前端工程师] 收起 overviewList 后再 focusMarker；再次点"更多"可重新展开列表。
+    function focusMoreSpot(key) {
+      overviewListOpen = false;
+      document.getElementById("overviewList").classList.remove("open");
+      focusMarker(key);
     }
 
     function renderOverviewList(items) {
@@ -2158,7 +2366,8 @@
       setDetailOpen(!document.getElementById("detailSheet").classList.contains("open"));
     });
 
-    document.getElementById("travelGuide").addEventListener("click", (event) => {
+    // [前端工程师] 美食已移入"须知"模态，图片点击委托随之挂到 #infoBody。
+    document.getElementById("infoBody").addEventListener("click", (event) => {
       const button = event.target.closest(".food-image-button");
       if (!button) return;
       openImageViewer(button.dataset.image, button.dataset.title);
@@ -2168,8 +2377,14 @@
     document.getElementById("imageViewer").addEventListener("click", (event) => {
       if (event.target.id === "imageViewer") closeImageViewer();
     });
+
+    // [前端工程师] 出行须知模态的开关与无障碍处理：点遮罩或关闭按钮退出，Esc 统一关闭两个浮层。
+    document.getElementById("infoClose").addEventListener("click", closeEssentials);
+    document.getElementById("infoModal").addEventListener("click", (event) => {
+      if (event.target.id === "infoModal") closeEssentials();
+    });
     window.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeImageViewer();
+      if (event.key === "Escape") { closeImageViewer(); closeEssentials(); }
     });
     window.addEventListener("resize", () => { if (mapReady) map.resize(); });
 
@@ -2187,6 +2402,64 @@
       viewer.classList.remove("open");
       viewer.setAttribute("aria-hidden", "true");
       document.getElementById("viewerImage").src = "";
+    }
+
+    // [旅行专家] 渲染本地视角的出行须知正文（时差/证件/防晒/购物/民俗/打包/应急等）。
+    // [前端工程师] 内容仅在首次打开时渲染一次（infoRendered 标记），含 empty 兜底；warn 类用于安全/购物强提示。
+    let infoRendered = false;
+    function renderEssentials() {
+      // [前端工程师] 标题每次打开都同步（幂等、开销极小），避免首次渲染早于 tripData 加载时标题被永久缓存为默认值。
+      // [交互设计师] 模态标题用行程名 + 日期范围，补足整体行程身份，优先级：高。
+      if (tripData) {
+        document.getElementById("infoTitle").textContent = tripData.tripTitle || "出行须知";
+        document.getElementById("infoSub").textContent = tripData.dateRange
+          ? `${tripData.dateRange} · 出发前必读`
+          : "出发前必读";
+      }
+      if (infoRendered) return;
+      const body = document.getElementById("infoBody");
+      if (!essentialsData.length) {
+        body.innerHTML = `<div class="info-empty">暂无须知内容</div>`;
+        infoRendered = true;
+        return;
+      }
+      const sections = essentialsData.map((entry) => `
+        <section class="info-section ${entry.warn ? "warn" : ""}">
+          <span class="info-ico" aria-hidden="true">${entry.ico}</span>
+          <div>
+            <h4>${escapeHtml(entry.title)}</h4>
+            <p>${escapeHtml(entry.text)}</p>
+          </div>
+        </section>
+      `).join("");
+      // [旅行专家] 顺路美食是通用新疆菜、不随天变化。[交互设计师] 去重后在此统一展示一次，避免每天重复，优先级：高。
+      // [前端工程师] 复用 .food-grid/.food-card 与图片大图查看器（点击委托见 infoBody 监听）。
+      const foodGrid = `
+        <section class="info-food">
+          <div class="section-head">
+            <h3>顺路美食</h3>
+            <span>点图看大图</span>
+          </div>
+          <div class="food-grid">
+            ${globalFoods.map((key) => renderFoodCard(foodCatalog[key])).join("")}
+          </div>
+        </section>
+      `;
+      body.innerHTML = sections + foodGrid;
+      infoRendered = true;
+    }
+
+    function openEssentials() {
+      renderEssentials();
+      const modal = document.getElementById("infoModal");
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeEssentials() {
+      const modal = document.getElementById("infoModal");
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
     }
   </script>
 </body>
