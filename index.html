@@ -465,6 +465,7 @@
       overflow-x: auto;
       padding: 2px 0;
       scrollbar-width: none;
+      transition: opacity 180ms ease, visibility 180ms, width 220ms ease;
     }
 
     .route-caption::-webkit-scrollbar { display: none; }
@@ -936,9 +937,49 @@
 
     .info-modal.open .info-card { transform: none; }
 
-    /* [前端工程师] 顺路美食区与上方须知卡片留出间距，复用既有 .food-grid/.food-card 与 .section-head。 */
+    /* [前端工程师] 必吃美食区与上方须知卡片留出间距，复用既有 .food-grid/.food-card 与 .section-head。 */
     .info-food { margin-top: 4px; }
-    .info-food .section-head { margin-bottom: 10px; }
+    .info-food .section-head { margin-bottom: 6px; }
+
+    /* [交互设计师] 价格提示语：弱化、置于分类之上，明确"仅供参考"。优先级：中。 */
+    .food-note {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 660;
+      line-height: 1.5;
+    }
+
+    /* [交互设计师] 分类小标题，区隔面食/烤肉/汤菜/饮品几组。 */
+    .food-cat { margin-top: 12px; }
+    .food-cat:first-of-type { margin-top: 0; }
+
+    .food-cat-title {
+      margin: 0 0 8px;
+      color: #155e57;
+      font-size: 13px;
+      font-weight: 840;
+      line-height: 1.2;
+    }
+
+    /* [旅行专家] 售价参考 badge：独立一行，醒目但不喧宾夺主。[前端工程师] 用既有 teal 体系。 */
+    .food-price {
+      justify-self: start;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: #0f766e;
+      font-size: 11px;
+      font-weight: 820;
+      font-style: normal;
+      line-height: 1.4;
+    }
+
+    /* [前端工程师] 无图（或图片加载失败降级）的美食卡：去掉图片占位，保持卡片自然高度。 */
+    .food-card.no-image figcaption { padding-top: 10px; }
+
+    /* [交互设计师] 同一行内图文卡高度不一时，顶部对齐，避免文字卡被拉伸出大片空白。优先级：中。 */
+    .info-food .food-grid { align-items: start; }
 
     .info-head {
       display: flex;
@@ -1043,6 +1084,591 @@
         left: 28px;
       }
     }
+
+    /* Daylight lavender travel redesign */
+    :root {
+      --ink: #293649;
+      --muted: #6e7f91;
+      --panel: rgba(255, 255, 255, 0.9);
+      --line: rgba(77, 110, 151, 0.16);
+      --teal: #7658bd;
+      --road: #7658bd;
+      --flight: #598fcc;
+      --return: #7658bd;
+      --gold: #d9a21f;
+      --sky: #78acd5;
+      --lavender: #8063c4;
+      --mountain: #718077;
+      --theme-primary: #7658bd;
+      --theme-secondary: #598fcc;
+      --theme-end: #d9a21f;
+      --theme-soft: #f0ecfb;
+      --shadow: 0 18px 48px rgba(48, 77, 111, 0.2);
+    }
+
+    body {
+      background: #dcecf6;
+      color: var(--ink);
+      font-family: Inter, "SF Pro Display", "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+    }
+
+    #map { background: #dcecf6; }
+
+    .shade {
+      background: rgba(226, 239, 247, 0.08);
+    }
+
+    .top-card {
+      top: max(18px, env(safe-area-inset-top));
+      right: auto;
+      left: 16px;
+      width: 48vw;
+      max-height: calc(100vh - 178px);
+      padding: 16px 13px 14px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.91);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px) saturate(1.08);
+      scrollbar-width: none;
+    }
+
+    .top-card::-webkit-scrollbar { display: none; }
+
+    .top-card.expanded {
+      width: calc(100vw - 94px);
+      max-height: calc(100vh - 42px);
+    }
+
+    .trip-brand {
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(89, 143, 204, 0.2);
+      color: #344760;
+      font-size: 15px;
+      font-weight: 820;
+      letter-spacing: 0.08em;
+    }
+
+    .trip-brand::after {
+      display: block;
+      width: 26px;
+      height: 2px;
+      margin-top: 13px;
+      background: var(--theme-primary);
+      box-shadow: 0 5px 14px rgba(128, 99, 196, 0.24);
+      content: "";
+    }
+
+    .day-row {
+      display: block;
+      margin-top: 16px;
+    }
+
+    .day-chip {
+      height: auto;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #293649;
+      font-size: clamp(25px, 7vw, 40px);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    .mode-pill {
+      display: inline-flex;
+      margin-top: 12px;
+      padding: 6px 9px;
+      border: 1px solid rgba(89, 143, 204, 0.28);
+      border-radius: 999px;
+      background: rgba(120, 172, 213, 0.1);
+      color: #527da8;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .date-line {
+      margin: 14px 0 0;
+      color: var(--theme-primary);
+      font-size: 14px;
+      font-weight: 740;
+      letter-spacing: 0.04em;
+    }
+
+    .top-card h1 {
+      margin: 13px 0 0;
+      color: #273548;
+      font-size: clamp(17px, 4.8vw, 28px);
+      font-weight: 760;
+      letter-spacing: 0.04em;
+    }
+
+    .route-line,
+    .stay-line {
+      display: none;
+      color: #708195;
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .route-line {
+      margin: 14px 0 0;
+      padding-top: 13px;
+      border-top: 1px dashed color-mix(in srgb, var(--theme-primary) 24%, transparent);
+    }
+
+    .stay-line {
+      margin: 4px 0 0;
+      color: #9d7415;
+    }
+
+    .actions { margin-top: 14px; }
+
+    .panel-stop-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 15px;
+      padding-top: 14px;
+      border-top: 1px dashed color-mix(in srgb, var(--theme-primary) 24%, transparent);
+    }
+
+    .panel-stop {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      color: #4b5c70;
+      font-size: 11px;
+      font-weight: 720;
+      line-height: 1.25;
+    }
+
+    .panel-stop span {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(96, 121, 150, 0.34);
+      border-radius: 50%;
+      color: #73869a;
+    }
+
+    .panel-stop:first-child span {
+      border-color: var(--theme-primary);
+      background: var(--theme-soft);
+      color: var(--theme-primary);
+      box-shadow: 0 5px 12px rgba(118, 88, 189, 0.2);
+    }
+
+    .panel-stop:last-child {
+      color: #a47710;
+    }
+
+    .panel-stop:last-child span {
+      border-color: var(--theme-end);
+      background: #fff5d8;
+      color: #a47710;
+      box-shadow: 0 5px 12px rgba(217, 162, 31, 0.2);
+    }
+
+    .control-button {
+      min-height: 44px;
+      border-color: var(--theme-primary);
+      border-radius: 999px;
+      background: var(--theme-primary);
+      color: #fff;
+    }
+
+    .control-button.primary {
+      border-color: var(--theme-primary);
+      background: var(--theme-primary);
+      color: #fff;
+    }
+
+    .control-button:hover,
+    .control-button:focus-visible {
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 3px rgba(118, 88, 189, 0.14);
+    }
+
+    .detail-sheet { border-color: rgba(118, 88, 189, 0.16); }
+
+    .detail-route,
+    .night-box,
+    .chip,
+    .brief-item,
+    .guide-list li {
+      border-color: rgba(118, 88, 189, 0.14);
+      background: rgba(239, 235, 249, 0.72);
+      color: #43536a;
+    }
+
+    .night-box span,
+    .night-box .night-hotel,
+    .chip b,
+    .brief-item b,
+    .food-cat-title {
+      color: var(--theme-primary);
+    }
+
+    .day-rail {
+      top: max(18px, env(safe-area-inset-top));
+      right: 14px;
+      bottom: auto;
+      left: auto;
+      z-index: 9;
+      display: flex;
+      flex-direction: column;
+      width: 60px;
+      max-height: calc(100vh - 176px);
+      gap: 8px;
+      padding: 10px 7px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.84);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      scrollbar-width: none;
+      transition: opacity 180ms ease, visibility 180ms;
+    }
+
+    .day-rail::-webkit-scrollbar { display: none; }
+
+    .day-button {
+      flex: 0 0 auto;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0;
+      border-color: rgba(92, 120, 153, 0.22);
+      border-radius: 50%;
+      background: rgba(238, 245, 250, 0.76);
+    }
+
+    .day-button b {
+      color: #6b7e94;
+      font-size: 11px;
+    }
+
+    .day-button.active,
+    .day-button.overview.active,
+    .day-button.overview.scenic.active,
+    .day-button.overview.info.active {
+      border-color: var(--theme-primary);
+      background: var(--theme-primary);
+      box-shadow: 0 7px 16px color-mix(in srgb, var(--theme-primary) 30%, transparent);
+    }
+
+    .day-button.active b,
+    .day-button.overview.active b,
+    .day-button.overview.info b {
+      color: #fff;
+    }
+
+    .map-toolbar {
+      position: absolute;
+      bottom: max(16px, env(safe-area-inset-bottom));
+      left: 14px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+    }
+
+    .map-action {
+      min-height: 46px;
+      padding: 0 16px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.93);
+      color: #344760;
+      box-shadow: 0 10px 28px rgba(48, 77, 111, 0.2);
+      backdrop-filter: blur(16px);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .map-action.primary {
+      border-color: var(--theme-primary);
+      background: var(--theme-primary);
+      color: #fff;
+    }
+
+    .map-action:hover,
+    .map-action:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 18%, transparent),
+        0 10px 28px rgba(48, 77, 111, 0.2);
+    }
+
+    .overview-menu {
+      position: absolute;
+      bottom: calc(70px + env(safe-area-inset-bottom));
+      left: 14px;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(96px, 1fr));
+      gap: 8px;
+      width: min(260px, calc(100vw - 28px));
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: opacity 180ms ease, transform 180ms ease, visibility 180ms;
+      pointer-events: none;
+    }
+
+    .overview-menu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .overview-action {
+      min-height: 44px;
+      border: 1px solid color-mix(in srgb, var(--theme-primary) 18%, #dce5ed);
+      border-radius: 12px;
+      background: var(--theme-soft);
+      color: #41536a;
+      cursor: pointer;
+      font-weight: 780;
+    }
+
+    .overview-action:hover,
+    .overview-action:focus-visible {
+      border-color: var(--theme-primary);
+      outline: none;
+    }
+
+    .spot-info-card {
+      position: absolute;
+      right: 78px;
+      bottom: calc(78px + env(safe-area-inset-bottom));
+      left: 16px;
+      z-index: 9;
+      display: grid;
+      gap: 7px;
+      max-width: 430px;
+      padding: 16px 48px 16px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      border-left: 5px solid var(--theme-primary);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: opacity 180ms ease, transform 180ms ease, visibility 180ms;
+      pointer-events: none;
+    }
+
+    .spot-info-card.open {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .spot-info-card .region {
+      color: var(--theme-primary);
+      font-size: 11px;
+      font-weight: 820;
+      letter-spacing: 0.08em;
+    }
+
+    .spot-info-card h2 {
+      margin: 0;
+      color: #293649;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .spot-info-card p {
+      margin: 0;
+      color: #61738a;
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .spot-info-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      min-width: 44px;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 1px solid rgba(89, 117, 150, 0.18);
+      border-radius: 999px;
+      background: #fff;
+      color: #52657c;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .app.more-explore .top-card,
+    .app.more-explore .day-rail {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .app.map-only .top-card,
+    .app.map-only .day-rail,
+    .app.map-only .overview-list,
+    .app.map-only .overview-menu,
+    .app.map-only .spot-info-card,
+    .app.map-only .overview-toggle,
+    .app.map-only .shade {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .app.map-only .clean-toggle {
+      border-color: var(--theme-primary);
+      background: var(--theme-primary);
+      color: #fff;
+    }
+
+    .overview-list {
+      right: 78px;
+      bottom: 78px;
+      left: 16px;
+      border-color: rgba(255, 255, 255, 0.82);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--ink);
+    }
+
+    .overview-list-item,
+    .region-card,
+    .region-spot {
+      border-color: rgba(118, 88, 189, 0.13);
+      background: rgba(244, 241, 251, 0.82);
+      color: #35455b;
+    }
+
+    .region-card p,
+    .region-spot .spot-desc,
+    .overview-list-item span:last-child {
+      color: #718196;
+    }
+
+    .stop-marker {
+      width: 34px;
+      height: 34px;
+      border: 3px solid #fff;
+      background: var(--theme-primary);
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(118, 88, 189, 0.22), 0 8px 20px rgba(57, 77, 106, 0.28);
+    }
+
+    .stop-marker.flight,
+    .stop-marker.start,
+    .stop-marker.scenic,
+    .stop-marker.transfer {
+      background: var(--theme-primary);
+    }
+
+    .stop-marker.flight,
+    .stop-marker.transfer { background: var(--theme-secondary); }
+
+    .stop-marker.end {
+      border-color: #fff;
+      background: var(--theme-end);
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(217, 162, 31, 0.24), 0 8px 20px rgba(91, 74, 32, 0.28);
+    }
+
+    .distance-label {
+      border-color: rgba(118, 88, 189, 0.18);
+      background: rgba(255, 255, 255, 0.92);
+      color: #586a81;
+      box-shadow: 0 8px 18px rgba(48, 77, 111, 0.18);
+    }
+
+    .maplibregl-ctrl-group {
+      overflow: hidden;
+      border: 1px solid rgba(89, 117, 150, 0.18);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 8px 20px rgba(48, 77, 111, 0.16);
+    }
+
+    .maplibregl-ctrl-group button { filter: none; }
+    .maplibregl-ctrl-bottom-right { margin: 0 6px 12px 0; }
+    .maplibregl-ctrl-attrib { background: rgba(255, 255, 255, 0.82); color: #60738a; }
+
+    .info-card,
+    .image-viewer figure {
+      border: 1px solid rgba(255, 255, 255, 0.84);
+      background: rgba(255, 255, 255, 0.97);
+      color: var(--ink);
+    }
+
+    .info-section,
+    .food-card {
+      border-color: rgba(118, 88, 189, 0.13);
+      background: rgba(244, 241, 251, 0.74);
+    }
+
+    .viewer-close {
+      border-color: rgba(89, 117, 150, 0.2);
+      background: #fff;
+      color: #41536a;
+    }
+
+    @media (min-width: 820px) {
+      .top-card {
+        top: 24px;
+        right: auto;
+        left: 24px;
+        width: 360px;
+        max-height: calc(100vh - 176px);
+      }
+
+      .top-card.expanded { width: 430px; }
+
+      .day-rail {
+        top: 24px;
+        right: 24px;
+        bottom: auto;
+        left: auto;
+        width: 58px;
+        border-radius: 30px;
+      }
+
+      .overview-list {
+        right: 96px;
+        bottom: 86px;
+        left: 408px;
+      }
+
+      .spot-info-card {
+        right: auto;
+        bottom: 86px;
+        left: 24px;
+        width: 360px;
+      }
+
+      .map-toolbar { left: 24px; bottom: 24px; }
+      .overview-menu { left: 24px; bottom: 82px; }
+      .maplibregl-ctrl-bottom-right { margin: 0 10px 12px 0; }
+    }
   </style>
 </head>
 <body>
@@ -1051,13 +1677,16 @@
     <div class="shade"></div>
 
     <section class="top-card" aria-live="polite">
+      <div class="trip-brand">新疆 8 日环线</div>
       <div class="day-row">
         <span class="day-chip" id="dayChip">第1天</span>
         <span class="mode-pill" id="modePill">飞机</span>
       </div>
+      <p class="date-line" id="dateLine">6月7日</p>
       <h1 id="dayTitle">抵达入住</h1>
       <p class="route-line" id="routeLine">无锡 → 石河子</p>
       <p class="stay-line" id="stayLine">夜宿：石河子</p>
+      <div class="panel-stop-list" id="panelStopList" aria-label="当天停靠点"></div>
       <div class="actions">
         <button class="control-button primary" id="detailButton" type="button">查看详情</button>
       </div>
@@ -1079,7 +1708,23 @@
 
     <nav class="day-rail" id="dayRail" aria-label="选择行程天数"></nav>
     <div class="overview-list" id="overviewList" aria-label="汇总列表"></div>
-    <div class="route-caption" id="routeCaption" aria-label="当天路线索引"></div>
+    <aside class="spot-info-card" id="spotInfoCard" aria-live="polite" aria-hidden="true">
+      <button class="spot-info-close" id="spotInfoClose" type="button">关闭</button>
+      <span class="region" id="spotInfoRegion"></span>
+      <h2 id="spotInfoTitle"></h2>
+      <p id="spotInfoDesc"></p>
+    </aside>
+    <div class="overview-menu" id="overviewMenu" aria-label="行程总览菜单">
+      <button class="overview-action" type="button" data-overview-action="current">返回当天</button>
+      <button class="overview-action" type="button" data-overview-action="scenic">全程打卡</button>
+      <button class="overview-action" type="button" data-overview-action="overnight">全程落脚</button>
+      <button class="overview-action" type="button" data-overview-action="more">更多目的地</button>
+      <button class="overview-action" type="button" data-overview-action="info">出行须知</button>
+    </div>
+    <div class="map-toolbar" aria-label="地图操作">
+      <button class="map-action primary clean-toggle" id="cleanToggle" type="button" aria-pressed="false">清屏看地图</button>
+      <button class="map-action overview-toggle" id="overviewToggle" type="button" aria-expanded="false">行程总览</button>
+    </div>
     <div class="image-viewer" id="imageViewer" aria-hidden="true">
       <figure>
         <button class="viewer-close" id="viewerClose" type="button" aria-label="关闭大图">×</button>
@@ -1530,7 +2175,16 @@
 }
 </script>
   <script>
-    const colors = { flight: "#2563eb", car: "#c05a22", return: "#6d35c6" };
+    const dayThemes = {
+      1: { primary: "#4f8fc9", secondary: "#86b8dc", end: "#d9a21f", soft: "#eaf4fb", route: "#4f8fc9" },
+      2: { primary: "#1979b9", secondary: "#42a9b7", end: "#397f9c", soft: "#e6f5f8", route: "#1979b9" },
+      3: { primary: "#4f8757", secondary: "#86aa58", end: "#d3a52b", soft: "#edf5e9", route: "#4f8757" },
+      4: { primary: "#7658bd", secondary: "#3f83bd", end: "#d9a21f", soft: "#f0ecfb", route: "#7658bd" },
+      5: { primary: "#ad6038", secondary: "#d38a51", end: "#74483b", soft: "#f8eee7", route: "#ad6038" },
+      6: { primary: "#247f8b", secondary: "#7895ad", end: "#47715d", soft: "#e8f3f2", route: "#247f8b" },
+      7: { primary: "#4f7d4c", secondary: "#72a3bd", end: "#aa743d", soft: "#edf4e9", route: "#4f7d4c" },
+      8: { primary: "#527fae", secondary: "#84abc9", end: "#d49335", soft: "#ebf2f8", route: "#527fae" }
+    };
     const dayButtons = [];
     let tripData = null;
     let activeMarkers = [];
@@ -1541,7 +2195,7 @@
     let overviewListOpen = false;
     let focusedMarkerKey = "";
     let mapReady = false;
-    let animationFrame = null;
+    let mapOnlyMode = false;
 
     const foodImages = {
       dapanji: "https://commons.wikimedia.org/wiki/Special:FilePath/Dapanji%20Uyghur%20Style.jpg?width=640",
@@ -1553,21 +2207,46 @@
       ayran: "https://commons.wikimedia.org/wiki/Special:FilePath/Ayron.jpg?width=640"
     };
 
+    // [旅行专家] 扩充为"必吃美食"清单并补本地常见参考价。说明：新疆餐食按份/按串/按斤计价差异大，旺季与景区更贵，
+    //            这里给的是当地常见价位区间，仅作心理预期，不是精确报价（避免"胡编"成确定数字）。image 仅保留有把握的 7 张图，
+    //            其余无图条目以纯文字卡呈现，不臆造图片。
+    // [前端工程师] price 字段为可选；renderFoodCard 对有/无图、有/无价都做了兼容；按 foodCategories 分类渲染。
     const foodCatalog = {
-      dapanji: { name: "新疆大盘鸡", note: "鸡肉、土豆和辣椒炖炒，适合多人分食。", image: foodImages.dapanji },
-      laghman: { name: "拉条子/拌面", note: "新疆常见主食，长途转场后吃一碗很稳。", image: foodImages.laghman },
-      samsa: { name: "羊肉烤包子", note: "外皮烤香，常见馅料是羊肉和洋葱。", image: foodImages.samsa },
-      pilaf: { name: "抓饭", note: "米饭、胡萝卜和羊肉的经典组合。", image: foodImages.pilaf },
-      shashlik: { name: "烤肉/羊肉串", note: "新疆路线上很常见，趁热吃最香。", image: foodImages.shashlik },
-      naan: { name: "馕", note: "适合配烤肉、大盘鸡，也方便路上垫肚子。", image: foodImages.naan },
-      ayran: { name: "爱兰/酸奶饮品", note: "酸乳饮品，适合解腻，肠胃敏感少量尝。", image: foodImages.ayran }
+      // 面食 · 主食
+      laghman: { name: "拉条子 / 拌面", price: "约 25–35 元/份", note: "手工拉面拌炒菜，多数店加面免费。", image: foodImages.laghman },
+      pilaf: { name: "抓饭（手抓饭）", price: "约 20–30 元/份", note: "羊肉、胡萝卜焖米饭，油润管饱。", image: foodImages.pilaf },
+      naan: { name: "馕", price: "约 3–10 元/个", note: "馕坑现烤，越厚越实在，耐放好携带。", image: foodImages.naan },
+      nangbaorou: { name: "馕包肉", price: "约 45–70 元/份", note: "红烧羊肉盖在烤馕上，馕吸汤汁一起吃。" },
+      huangmian: { name: "黄面烤肉", price: "约 15–25 元/份", note: "凉黄面拌烤肉，夏天解腻的街头组合。" },
+      youtazi: { name: "油塔子", price: "约 3–5 元/个", note: "层层油酥的蒸面食，配奶茶或菜都行。" },
+      // 烤肉 · 肉食
+      shashlik: { name: "红柳烤肉 / 羊肉串", price: "红柳大串 8–15 元/串，小串 2–4 元", note: "肥瘦相间，趁热吃最香。", image: foodImages.shashlik },
+      nangkengrou: { name: "馕坑肉", price: "约 6–12 元/块", note: "馕坑里烤出的整块羊肉，外焦里嫩。" },
+      yangpai: { name: "烤羊排", price: "约 60–120 元/份", note: "外皮香脆、肉质嫩，适合分食。" },
+      shouzhua: { name: "手抓羊肉", price: "按斤，一份约 60–100 元", note: "清水炖带骨羊肉，蘸盐或洋葱原味吃。" },
+      jiaomaji: { name: "椒麻鸡", price: "约 40–60 元/半只", note: "麻辣凉拌，开胃下饭。" },
+      dapanji: { name: "新疆大盘鸡", price: "约 68–128 元/大盘", note: "鸡肉、土豆、辣椒同炖，配皮带面多人分。", image: foodImages.dapanji },
+      // 汤菜 · 小吃
+      samsa: { name: "烤包子（薄皮）", price: "约 5–8 元/个", note: "馕坑烤制，羊肉洋葱馅，皮脆汁多。", image: foodImages.samsa },
+      gangzirou: { name: "缸子肉", price: "约 15–25 元/缸", note: "搪瓷缸炖的带骨羊肉汤，一人份暖胃。" },
+      wanzitang: { name: "丸子汤", price: "约 10–15 元/碗", note: "羊肉丸配粉丝汤，清淡顺口。" },
+      liangpi: { name: "凉皮 / 酿皮", price: "约 8–12 元/份", note: "筋道爽辣的街头小吃，解腻。" },
+      // 饮品 · 甜点 · 瓜果
+      ayran: { name: "老酸奶 / 酸奶疙瘩", price: "约 8–15 元/碗", note: "本地酸奶偏酸，可加蜂蜜或干果。", image: foodImages.ayran },
+      kvass: { name: "卡瓦斯（格瓦斯）", price: "约 5–10 元/杯", note: "麦芽发酵饮料，微酸带气泡。" },
+      naicha: { name: "咸奶茶", price: "约 10–20 元/壶", note: "咸味奶茶配馕或炒米，奶香解渴。" },
+      icecream: { name: "新疆老冰淇淋", price: "约 5–10 元/份", note: "老式蛋花/牛奶冰淇淋，街边常见。" },
+      qiegao: { name: "玛仁糖（切糕）", price: "论两买，约 15–30 元/两", note: "果仁压得很实、很重，先看秤、少量买。" },
+      fruit: { name: "时令瓜果", price: "论斤，当地约 2–6 元/斤", note: "哈密瓜、葡萄、西瓜当季最甜也最便宜。" }
     };
 
-    // [交互设计师] 复盘：原 dayGuides.tips 与 JSON 的 safetyNote/parentReminder 内容重叠，每天的 foods 又把通用新疆菜
-    //            重复洗牌——属于信息冗余。优先级：高。现删除按天 tips（保留 JSON 的天气/注意作为唯一贴士来源），
-    //            并把美食去重为一份全局清单，只在"须知"里展示一次，不再按天重复。
-    // [前端工程师] dayGuides 整体移除；globalFoods 取 foodCatalog 全部条目（天然去重），美食改由出行须知统一渲染。
-    const globalFoods = Object.keys(foodCatalog);
+    // [交互设计师] 必吃美食改为简单分类（面食/烤肉/汤菜小吃/饮品甜点），每类一组卡片，扫读更轻松。优先级：中。
+    const foodCategories = [
+      { title: "面食 · 主食", keys: ["laghman", "pilaf", "naan", "nangbaorou", "huangmian", "youtazi"] },
+      { title: "烤肉 · 肉食", keys: ["shashlik", "nangkengrou", "yangpai", "shouzhua", "jiaomaji", "dapanji"] },
+      { title: "汤菜 · 小吃", keys: ["samsa", "gangzirou", "wanzitang", "liangpi"] },
+      { title: "饮品 · 甜点 · 瓜果", keys: ["ayran", "kvass", "naicha", "icecream", "qiegao", "fruit"] }
+    ];
 
     // [旅行专家] 补充"季节亮点"与"理性购物"两类本地视角内容，原因：6 月伊犁是薰衣草与草原最佳期（最大种草点），
     //            而和田玉展览馆/红酒晚宴/宝藏馆/边疆之花以本地经验多为团队购物展销环节，应诚实提示。
@@ -1615,7 +2294,13 @@
         id: "base-raster",
         type: "raster",
         source: "base",
-        paint: { "raster-opacity": 0.9, "raster-saturation": -0.14, "raster-contrast": -0.04 }
+        paint: {
+          "raster-opacity": 1,
+          "raster-saturation": 0.12,
+          "raster-contrast": -0.08,
+          "raster-brightness-min": 0.12,
+          "raster-brightness-max": 1
+        }
       }]
     };
 
@@ -1712,11 +2397,23 @@
 
     function routeFeature(item, visibleCoords = null) {
       const mode = modeKey(item);
+      const theme = dayThemes[item.day] || dayThemes[4];
       return {
         type: "Feature",
-        properties: { day: item.day, mode, color: colors[mode] },
+        properties: { day: item.day, mode, color: theme.route },
         geometry: { type: "LineString", coordinates: visibleCoords || coordinates(item) }
       };
+    }
+
+    function applyDayTheme(item) {
+      const theme = dayThemes[item.day] || dayThemes[4];
+      const root = document.documentElement;
+      root.style.setProperty("--theme-primary", theme.primary);
+      root.style.setProperty("--theme-secondary", theme.secondary);
+      root.style.setProperty("--theme-end", theme.end);
+      root.style.setProperty("--theme-soft", theme.soft);
+      root.style.setProperty("--teal", theme.primary);
+      root.style.setProperty("--gold", theme.end);
     }
 
     function collection(features = []) {
@@ -1746,7 +2443,7 @@
         type: "line",
         source: "active-route",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": ["get", "color"], "line-width": 7, "line-opacity": 0.98 }
+        paint: { "line-color": ["get", "color"], "line-width": 6, "line-opacity": 0.98 }
       });
     }
 
@@ -1781,24 +2478,39 @@
           ? `<b>${item.label}</b>`
           : `<span>${item.dayLabel}</span><b>${item.label}</b>`;
         pin.title = `${item.dayLabel} ${item.label}`;
-        addTrackedMarker(item.key, pin, item.coord);
+        addTrackedMarker(
+          item.key,
+          pin,
+          item.coord,
+          item.kind === "more" ? () => selectMoreSpot(item) : null
+        );
       });
     }
 
-    function addTrackedMarker(key, element, coord) {
+    function addTrackedMarker(key, element, coord, clickHandler = null) {
       const marker = new maplibregl.Marker({ element, anchor: "center" }).setLngLat(coord).addTo(map);
-      element.addEventListener("click", () => focusMarker(key));
+      element.addEventListener("click", clickHandler || (() => focusMarker(key)));
       activeMarkers.push(marker);
       markerByKey.set(key, { marker, element, coord });
       return marker;
     }
 
     function addSegmentDistanceLabels(item) {
-      item.numberedStops.slice(1).forEach((stop, index) => {
+      const segments = item.numberedStops.slice(1).map((stop, index) => {
         const previous = item.numberedStops[index];
+        return {
+          stop,
+          previous,
+          distance: distanceKm(previous.coord, stop.coord)
+        };
+      });
+      const visibleSegments = segments.length > 2
+        ? [segments.reduce((longest, segment) => segment.distance > longest.distance ? segment : longest)]
+        : segments;
+      visibleSegments.forEach(({ stop, previous, distance }) => {
         const label = document.createElement("div");
         label.className = "distance-label";
-        label.textContent = `约${Math.round(distanceKm(previous.coord, stop.coord))}km`;
+        label.textContent = `约${Math.round(distance)}km`;
         label.title = `${previous.shortLabel || previous.name} 到 ${stop.shortLabel || stop.name} 的直线距离`;
         activeMarkers.push(new maplibregl.Marker({ element: label, anchor: "center" }).setLngLat(midpoint(previous.coord, stop.coord)).addTo(map));
       });
@@ -1822,26 +2534,6 @@
         rail.appendChild(button);
         dayButtons.push(button);
       });
-      [
-        { label: "打卡", kind: "scenic" },
-        { label: "落脚", kind: "overnight" },
-        { label: "更多", kind: "more" },
-        // [交互设计师] 新增"须知"入口承载出行须知/打包/应急，优先级：高；放在 rail 末位、不影响既有按钮索引。
-        { label: "须知", kind: "info" }
-      ].forEach((entry) => {
-        const overviewButton = document.createElement("button");
-        overviewButton.className = `day-button overview ${entry.kind}`;
-        overviewButton.type = "button";
-        overviewButton.innerHTML = `<b>${entry.label}</b>`;
-        // [前端工程师] info 入口不进入地图汇总模式、不改变当前选中天，只打开模态，避免打断用户当前浏览的天。
-        overviewButton.addEventListener("click", () => {
-          if (entry.kind === "more") return showMore();
-          if (entry.kind === "info") return openEssentials();
-          return showOverview(entry.kind);
-        });
-        rail.appendChild(overviewButton);
-        dayButtons.push(overviewButton);
-      });
     }
 
     function routeText(item) {
@@ -1850,12 +2542,18 @@
 
     function updateText(item) {
       document.getElementById("detailButton").style.display = "";
-      // [交互设计师] 日期 chip 补真实日期（dateLabel 数据已存在却未展示），优先级：高，让用户一眼对上日历。
-      document.getElementById("dayChip").textContent = item.dateLabel ? `第${item.day}天 · ${item.dateLabel}` : `第${item.day}天`;
+      document.getElementById("dayChip").textContent = `DAY ${String(item.day).padStart(2, "0")}`;
+      document.getElementById("dateLine").textContent = item.dateLabel || "";
       document.getElementById("modePill").textContent = item.transportMode;
       document.getElementById("dayTitle").textContent = item.focus;
       document.getElementById("routeLine").textContent = routeText(item);
       document.getElementById("stayLine").textContent = item.overnightLabel;
+      document.getElementById("panelStopList").innerHTML = item.numberedStops.map((stop) => `
+        <div class="panel-stop">
+          <span>${stop.order}</span>
+          <b>${escapeHtml(stop.shortLabel || stop.name)}</b>
+        </div>
+      `).join("");
       document.getElementById("sheetTitle").textContent = `第${item.day}天 · ${item.focus}`;
       document.getElementById("detailRoute").textContent = detailRouteSummary(item);
       document.getElementById("detailDesc").textContent = "";
@@ -1869,7 +2567,6 @@
         </span>
       `).join("");
       renderTravelGuide(item);
-      renderRouteCaption(item);
     }
 
     function detailRouteSummary(item) {
@@ -1932,16 +2629,23 @@
       document.getElementById("travelGuide").innerHTML = renderDayBrief(item);
     }
 
+    // [前端工程师] 美食卡兼容三种情况：1) 有图—懒加载，加载失败则优雅降级为纯文字卡（不再整卡隐藏，保留名称/价格/简介）；
+    //              2) 无图—直接纯文字卡；3) 价格可选。价格用独立 badge 呈现。
     function renderFoodCard(food) {
       if (!food) return "";
+      const media = food.image ? `
+        <button class="food-image-button" type="button" data-image="${escapeAttr(food.image)}" data-title="${escapeAttr(food.name)}">
+          <img src="${escapeAttr(food.image)}" alt="${escapeAttr(food.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer"
+               onerror="this.closest('.food-card').classList.add('no-image'); this.closest('.food-image-button').remove()">
+        </button>
+      ` : "";
+      const price = food.price ? `<em class="food-price">${escapeHtml(food.price)}</em>` : "";
       return `
-        <figure class="food-card">
-          <button class="food-image-button" type="button" data-image="${escapeAttr(food.image)}" data-title="${escapeAttr(food.name)}">
-            <!-- [前端工程师] 美食图改 loading=lazy 懒加载，原因：详情页可能含多张外链大图，避免首屏带宽与解码压力；onerror 已做隐藏兜底。 -->
-            <img src="${escapeAttr(food.image)}" alt="${escapeAttr(food.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.closest('figure').style.display='none'">
-          </button>
+        <figure class="food-card ${food.image ? "" : "no-image"}">
+          ${media}
           <figcaption>
             <b>${escapeHtml(food.name)}</b>
+            ${price}
             <span>${escapeHtml(food.note)}</span>
           </figcaption>
         </figure>
@@ -2006,6 +2710,8 @@
 
     function selectDay(index) {
       if (!mapReady) return;
+      document.querySelector(".app").classList.remove("more-explore");
+      closeSpotInfo();
       overviewMode = false;
       overviewKindActive = "";
       overviewListOpen = false;
@@ -2013,15 +2719,14 @@
       const item = tripData.days[index];
       const coords = coordinates(item);
 
+      applyDayTheme(item);
       updateText(item);
       renderOverviewList([]);
       addMarkersForDay(item);
       dayButtons.forEach((button, i) => button.classList.toggle("active", i === index));
       dayButtons[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
       setDetailOpen(false);
-
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-      animationFrame = null;
+      closeOverviewMenu();
       showRoute(item, coords);
       moveMapToDay(item, coords);
     }
@@ -2037,6 +2742,8 @@
 
     function showOverview(kind) {
       if (!mapReady) return;
+      document.querySelector(".app").classList.remove("more-explore");
+      closeSpotInfo();
       if (overviewMode && overviewKindActive === kind) {
         clearFocusedMarker();
         fitMapToCoords(overviewItems(kind).map((item) => item.coord), 7.2);
@@ -2049,17 +2756,22 @@
       const items = overviewItems(kind);
 
       document.getElementById("dayChip").textContent = kind === "scenic" ? "打卡" : "落脚";
+      document.getElementById("dateLine").textContent = "8 日路线汇总";
       document.getElementById("modePill").textContent = kind === "scenic" ? "景点汇总" : "夜宿汇总";
       document.getElementById("dayTitle").textContent = kind === "scenic" ? "全程打卡" : "全程落脚";
       document.getElementById("detailButton").style.display = "none";
       document.getElementById("routeLine").textContent = "";
       document.getElementById("stayLine").textContent = "";
-      renderOverviewCaption(items);
+      document.getElementById("panelStopList").innerHTML = items.slice(0, 5).map((entry, index) => `
+        <div class="panel-stop">
+          <span>${index + 1}</span>
+          <b>${escapeHtml(entry.label)}</b>
+        </div>
+      `).join("");
       renderOverviewList([]);
       addOverviewMarkers(items);
-      const activeButtonIndex = kind === "scenic" ? tripData.days.length : tripData.days.length + 1;
-      dayButtons.forEach((button, i) => button.classList.toggle("active", i === activeButtonIndex));
-      dayButtons[activeButtonIndex]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      dayButtons.forEach((button) => button.classList.remove("active"));
+      closeOverviewMenu();
       map.getSource("active-route").setData(collection());
       fitMapToCoords(items.map((item) => item.coord), 7.2);
     }
@@ -2067,66 +2779,52 @@
     function showMore() {
       if (!mapReady) return;
       if (overviewMode && overviewKindActive === "more") {
-        overviewListOpen = !overviewListOpen;
-        document.getElementById("overviewList").classList.toggle("open", overviewListOpen);
-        if (!overviewListOpen) restoreCurrentMapView();
+        clearFocusedMarker();
+        closeSpotInfo();
+        restoreCurrentMapView();
+        closeOverviewMenu();
         return;
       }
       overviewMode = true;
       overviewKindActive = "more";
-      overviewListOpen = true;
+      overviewListOpen = false;
       setDetailOpen(false);
       const items = moreItems();
 
-      // [交互设计师] 顶部去掉"下次念想"等装饰性字样，只保留清晰的功能标题，避免像被劫持的"详情页"。优先级：中。
-      document.getElementById("dayChip").textContent = "更多";
-      document.getElementById("modePill").textContent = "";
-      document.getElementById("dayTitle").textContent = "新疆热门目的地";
-      document.getElementById("detailButton").style.display = "none";
-      document.getElementById("routeLine").textContent = "";
-      document.getElementById("stayLine").textContent = "";
-      document.getElementById("routeCaption").innerHTML = "";
-      renderMorePanel();
+      document.querySelector(".app").classList.add("more-explore");
+      renderOverviewList([]);
+      closeSpotInfo();
       addOverviewMarkers(items);
-      const activeButtonIndex = tripData.days.length + 2;
-      dayButtons.forEach((button, i) => button.classList.toggle("active", i === activeButtonIndex));
-      dayButtons[activeButtonIndex]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      dayButtons.forEach((button) => button.classList.remove("active"));
+      closeOverviewMenu();
       map.getSource("active-route").setData(collection());
       fitMapToCoords(items.map((item) => item.coord), 5.7);
     }
 
-    function renderMorePanel() {
-      const list = document.getElementById("overviewList");
-      // [交互设计师] 简洁分组列表：地区名只在分组头出现一次，景点行去掉重复角标，更接近"列个表"的清爽效果。优先级：高。
-      list.innerHTML = regionModules.map((group) => `
-        <section class="region-card ${group.className}">
-          <header>
-            <strong>${group.title}</strong>
-            <p>${group.intro}</p>
-          </header>
-          <div class="region-spots">
-            ${group.spots.map((spot) => `
-              <button class="region-spot" type="button" data-marker-key="${moreKey(spot, group)}" title="${spot.desc}">
-                <span class="spot-name">${spot.label}</span>
-                <span class="spot-desc">${spot.desc}</span>
-              </button>
-            `).join("")}
-          </div>
-        </section>
-      `).join("");
-      list.classList.add("more-panel");
-      list.classList.toggle("open", overviewListOpen);
-      list.querySelectorAll(".region-spot").forEach((button) => {
-        button.addEventListener("click", () => focusMoreSpot(button.dataset.markerKey));
-      });
+    function selectMoreSpot(item) {
+      if (focusedMarkerKey === item.key) {
+        clearFocusedMarker();
+        closeSpotInfo();
+        restoreCurrentMapView();
+        return;
+      }
+      focusMarker(item.key);
+      document.getElementById("spotInfoRegion").textContent = item.regionTitle;
+      document.getElementById("spotInfoTitle").textContent = item.label;
+      document.getElementById("spotInfoDesc").textContent = item.desc;
+      const card = document.getElementById("spotInfoCard");
+      card.className = `spot-info-card ${item.status} open`;
+      card.setAttribute("aria-hidden", "false");
     }
 
-    // [交互设计师] 点景点定位时先收起面板，避免飞过去的地图位置被面板遮挡（原"会被面板挡住"的问题）。优先级：高。
-    // [前端工程师] 收起 overviewList 后再 focusMarker；再次点"更多"可重新展开列表。
-    function focusMoreSpot(key) {
-      overviewListOpen = false;
-      document.getElementById("overviewList").classList.remove("open");
-      focusMarker(key);
+    function closeSpotInfo(restore = false) {
+      const card = document.getElementById("spotInfoCard");
+      card.className = "spot-info-card";
+      card.setAttribute("aria-hidden", "true");
+      if (restore && overviewMode && overviewKindActive === "more") {
+        clearFocusedMarker();
+        restoreCurrentMapView();
+      }
     }
 
     function renderOverviewList(items) {
@@ -2192,6 +2890,10 @@
         return;
       }
       const item = tripData.days[activeIndex];
+      if (mapOnlyMode) {
+        fitMapToDay(item, coordinates(item));
+        return;
+      }
       moveMapToDay(item, coordinates(item));
     }
 
@@ -2222,10 +2924,15 @@
     }
 
     function mapPadding() {
-      const cardHeight = Math.ceil(document.querySelector(".top-card").getBoundingClientRect().height) + 22;
+      if (mapOnlyMode) return { top: 34, right: 34, bottom: 34, left: 34 };
+      if (overviewMode && overviewKindActive === "more") {
+        return window.innerWidth < 820
+          ? { top: 52, right: 52, bottom: 86, left: 28 }
+          : { top: 58, right: 90, bottom: 94, left: 42 };
+      }
       return window.innerWidth < 820
-        ? { top: cardHeight, right: 34, bottom: 156, left: 34 }
-        : { top: cardHeight, right: 90, bottom: 112, left: 430 };
+        ? { top: 250, right: 82, bottom: 78, left: 24 }
+        : { top: 70, right: 104, bottom: 86, left: 408 };
     }
 
     function centerOfCoords(coords) {
@@ -2262,6 +2969,7 @@
         ...spot,
         kind: "more",
         dayLabel: group.badge,
+        regionTitle: group.title,
         status: group.className,
         key: moreKey(spot, group)
       })));
@@ -2362,8 +3070,59 @@
       });
     }
 
+    function closeOverviewMenu() {
+      const menu = document.getElementById("overviewMenu");
+      const button = document.getElementById("overviewToggle");
+      menu.classList.remove("open");
+      button.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleOverviewMenu() {
+      const menu = document.getElementById("overviewMenu");
+      const open = !menu.classList.contains("open");
+      menu.classList.toggle("open", open);
+      document.getElementById("overviewToggle").setAttribute("aria-expanded", String(open));
+    }
+
+    function setMapOnlyMode(open) {
+      mapOnlyMode = open;
+      const app = document.querySelector(".app");
+      const button = document.getElementById("cleanToggle");
+      if (open) {
+        setDetailOpen(false);
+        closeOverviewMenu();
+        closeSpotInfo();
+        overviewListOpen = false;
+        document.getElementById("overviewList").classList.remove("open");
+      }
+      app.classList.toggle("map-only", open);
+      button.setAttribute("aria-pressed", String(open));
+      button.textContent = open ? "退出清屏" : "清屏看地图";
+      requestAnimationFrame(() => {
+        map.resize();
+        restoreCurrentMapView();
+      });
+    }
+
     document.getElementById("detailButton").addEventListener("click", () => {
       setDetailOpen(!document.getElementById("detailSheet").classList.contains("open"));
+    });
+
+    document.getElementById("cleanToggle").addEventListener("click", () => {
+      setMapOnlyMode(!mapOnlyMode);
+    });
+
+    document.getElementById("overviewToggle").addEventListener("click", toggleOverviewMenu);
+    document.getElementById("spotInfoClose").addEventListener("click", () => closeSpotInfo(true));
+    document.querySelectorAll("[data-overview-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.dataset.overviewAction;
+        closeOverviewMenu();
+        if (action === "current") return selectDay(activeIndex);
+        if (action === "more") return showMore();
+        if (action === "info") return openEssentials();
+        return showOverview(action);
+      });
     });
 
     // [前端工程师] 美食已移入"须知"模态，图片点击委托随之挂到 #infoBody。
@@ -2384,7 +3143,13 @@
       if (event.target.id === "infoModal") closeEssentials();
     });
     window.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") { closeImageViewer(); closeEssentials(); }
+      if (event.key === "Escape") {
+        closeImageViewer();
+        closeEssentials();
+        closeOverviewMenu();
+        if (document.getElementById("spotInfoCard").classList.contains("open")) closeSpotInfo(true);
+        if (mapOnlyMode) setMapOnlyMode(false);
+      }
     });
     window.addEventListener("resize", () => { if (mapReady) map.resize(); });
 
@@ -2432,17 +3197,23 @@
           </div>
         </section>
       `).join("");
-      // [旅行专家] 顺路美食是通用新疆菜、不随天变化。[交互设计师] 去重后在此统一展示一次，避免每天重复，优先级：高。
-      // [前端工程师] 复用 .food-grid/.food-card 与图片大图查看器（点击委托见 infoBody 监听）。
+      // [旅行专家] 美食是通用新疆菜、不随天变化，统一在此展示一次；标题改为"必吃美食"。
+      // [交互设计师] 分类呈现 + 价格仅供参考的提示，避免被当成精确报价。[前端工程师] 复用 .food-card/.food-grid 与大图查看器。
       const foodGrid = `
         <section class="info-food">
           <div class="section-head">
-            <h3>顺路美食</h3>
-            <span>点图看大图</span>
+            <h3>必吃美食</h3>
+            <span>价格仅供参考</span>
           </div>
-          <div class="food-grid">
-            ${globalFoods.map((key) => renderFoodCard(foodCatalog[key])).join("")}
-          </div>
+          <p class="food-note">下列为新疆当地常见价位区间，随地区、旺季与店家浮动；有图的可点开看大图。</p>
+          ${foodCategories.map((cat) => `
+            <div class="food-cat">
+              <h4 class="food-cat-title">${escapeHtml(cat.title)}</h4>
+              <div class="food-grid">
+                ${cat.keys.map((key) => renderFoodCard(foodCatalog[key])).join("")}
+              </div>
+            </div>
+          `).join("")}
         </section>
       `;
       body.innerHTML = sections + foodGrid;
